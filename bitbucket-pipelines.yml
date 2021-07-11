@@ -39,5 +39,12 @@ pipelines:
         image: mcr.microsoft.com/dotnet/sdk:5.0
         script:
             - dotnet build ./src
-        services:
-          - docker
+
+  branches:
+    master:          
+      - step:
+          name: Deploy to Dev
+          deployment: dev
+          script:
+            - sed -i -e 's/##SERVICE_NAME##/$serviceName/g' autoscale.yaml
+            - dotnet publish -c Release
