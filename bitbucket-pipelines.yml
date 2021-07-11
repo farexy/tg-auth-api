@@ -46,5 +46,5 @@ pipelines:
           name: Deploy to Dev
           deployment: dev
           script:
-            - sed -i -e 's/##SERVICE_NAME##/$serviceName/g' autoscale.yaml
+            - sed -i -e 's/##SERVICE_NAME##/$serviceName/g' k8s/autoscale.yaml
             - dotnet publish -c Release
