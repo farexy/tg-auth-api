@@ -1,0 +1,77 @@
+variables:
+  ### REPO STRUCTURE-SPECIFIC VARIABLES ###
+  srcFolder: '$(Build.SourcesDirectory)/src'
+  ### PIPELINE-SPECIFIC VARIABLES ###
+  buildConfiguration: 'Release'
+  testBuildConfiguration: 'Release'
+  vmImageName: 'ubuntu-latest'
+  testCoverageResultsPath: '$(System.DefaultWorkingDirectory)/TestResults/Coverage'
+  dockerImageTag: '$(Build.SourceVersion)'
+  ### ENVIRONMENT-SPECIFIC VARIABLES ###
+  dockerRegistryServiceConnection: 'asg-acr-dev-flow'
+  containerRegistry: 'eastusflowacr.azurecr.io'
+  ### SERVICE-SPECIFIC VARIABLES ###
+  dockerfilePath: '$(srcFolder)/Surf.Job.Api/Dockerfile'
+  # serviceName is used as Docker image name as well
+  serviceName: 'jobs-api'
+
+trigger:
+  - hotfix/*
+  
+resources:
+- repo: self
+
+stages:
+
+- stage: BuildSourcesAndTest
+  displayName: Build the source code and execute tests
+  jobs:  
+  - job: BuildSourcesAndTest
+    displayName: Build the source code and execute tests
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: Build source code
+      inputs:
+        command: build
+        projects: $(srcFolder)/**/*.csproj
+        arguments: '--configuration $(buildConfiguration)'
+    - task: DotNetCoreCLI@2
+      displayName: Execute tests
+      inputs:
+        command: 'test'
+        projects: '$(srcFolder)/**/*Tests.csproj'
+        arguments: ' --configuration $(testBuildConfiguration) --logger trx /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(testCoverageResultsPath)'
+    - task: PublishCodeCoverageResults@1
+      displayName: Publish code coverage
+      inputs:
+        codeCoverageTool: cobertura
+        summaryFileLocation: $(testCoverageResultsPath)/**/*.xml
+        reportDirectory: $(testCoverageResultsPath)/Reports
+        failIfCoverageEmpty: false
+          
+- stage: BuildImageAndPush
+  displayName: Build and push Docker image
+  jobs:  
+  - job: BuildImageAndPush
+    displayName: Build and push Docker image
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Docker@2
+      displayName: Login to ACR
+      inputs:
+        command: login
+        containerRegistry: $(dockerRegistryServiceConnection)
+    - task: Docker@2
+      displayName: Build and push
+      inputs:
+        command: buildAndPush
+        repository: $(serviceName)
+        Dockerfile: $(dockerfilePath)
+        buildContext: $(srcFolder)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(dockerImageTag)
+        includeLatestTag: true

@@ -1,0 +1,184 @@
+variables:
+  ### REPO STRUCTURE-SPECIFIC VARIABLES ###
+  deploymentConfigsFolder: '$(Build.SourcesDirectory)/deployment'
+  srcFolder: '$(Build.SourcesDirectory)/src'
+  ### PIPELINE-SPECIFIC VARIABLES ###
+  vmImageName: 'ubuntu-latest'
+  dockerImageTag: '$(Build.SourceVersion)'
+  ### ENVIRONMENT-SPECIFIC VARIABLES ###
+  serviceNamespace: 'flow'
+  location: 'eastus'
+  dockerRegistryServiceConnection: 'asg-acr-dev-flow'
+  containerRegistry: 'eastusflowacr.azurecr.io'
+  environment: 'dev'
+  resourceGroup: 'ASG.Development.Flow'
+  azureSubscriptionEndpoint: 'asg-dev-flow'
+  ### SERVICE-SPECIFIC VARIABLES ###
+  dockerfilePath: '$(srcFolder)/Surf.Job.Api/Dockerfile'
+  # serviceName is used as Docker image name as well
+  serviceName: 'jobs-api'
+  serviceRoutePrefix: 'jobs'
+  aspnetcoreEnvironment: 'Development'
+  minReplicas: 1
+  maxReplicas: 2
+  cpuRequest: '100m'
+  cpuLimit: '300m'
+  cpuScaleThreshold: '225m'
+  memoryRequest: '350M'
+  memoryLimit: '500M'
+  memoryScaleThreshold: '425M'
+  
+trigger:
+  - master
+  
+resources:
+- repo: self
+
+stages:
+
+- stage: BuildImageAndPush
+  displayName: Build and push Docker image
+  jobs:  
+  - job: BuildImageAndPush
+    displayName: Build and push Docker image
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Docker@2
+      displayName: Login to ACR
+      inputs:
+        command: login
+        containerRegistry: $(dockerRegistryServiceConnection)
+    - task: Docker@2
+      displayName: Build and push
+      inputs:
+        command: buildAndPush
+        repository: $(serviceName)
+        Dockerfile: $(dockerfilePath)
+        buildContext: $(srcFolder)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(dockerImageTag)
+        includeLatestTag: true
+
+- stage: Deploy
+  displayName: Deploy to Kubernetes
+  jobs:
+  - job: Deploy
+    displayName: Deploy to Kubernetes
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: PowerShell@2
+      displayName: Replace dynamic string tokens in namespace.yaml
+      inputs:
+        targetType: inline
+        script: |
+          (Get-Content -Path $(deploymentConfigsFolder)/namespace.yaml -Raw) | Foreach-Object {
+           $_ -replace '##SERVICE_NAMESPACE##', '$(serviceNamespace)' `
+              -replace '##ENVIRONMENT##', '$(environment)' `
+           } | Set-Content -Path $(deploymentConfigsFolder)/namespace.yaml
+    - task: PowerShell@2
+      displayName: Replace dynamic string tokens in deployment.yaml
+      inputs:
+        targetType: inline
+        script: |
+          (Get-Content -Path $(deploymentConfigsFolder)/deployment.yaml -Raw) | Foreach-Object {
+           $_ -replace '##SERVICE_NAME##', '$(serviceName)' `
+              -replace '##LOCATION##', '$(location)' `
+              -replace '##INSTANCE_REPLICAS##', '$(minReplicas)' `
+              -replace '##CONTAINER_REGISTRY##', '$(containerRegistry)' `
+              -replace '##IMAGE_TAG##', '$(dockerImageTag)' `
+              -replace '##ASPNETCORE_ENVIRONMENT##', '$(aspnetcoreEnvironment)' `
+              -replace '##SERVICE_NAMESPACE##', '$(serviceNamespace)' `
+              -replace '##ENVIRONMENT##', '$(environment)' `
+              -replace '##MEMORY_REQUEST##', '$(memoryRequest)' `
+              -replace '##CPU_REQUEST##', '$(cpuRequest)' `
+              -replace '##MEMORY_LIMIT##', '$(memoryLimit)' `
+              -replace '##CPU_LIMIT##', '$(cpuLimit)' `
+           } | Set-Content -Path $(deploymentConfigsFolder)/deployment.yaml
+    - task: PowerShell@2
+      displayName: Replace dynamic string tokens in service.yaml
+      inputs:
+        targetType: inline
+        script: |
+          (Get-Content -Path $(deploymentConfigsFolder)/service.yaml -Raw) | Foreach-Object {
+           $_ -replace '##SERVICE_NAME##', '$(serviceName)' `
+              -replace '##SERVICE_NAMESPACE##', '$(serviceNamespace)' `
+              -replace '##ENVIRONMENT##', '$(environment)' `
+           } | Set-Content -Path $(deploymentConfigsFolder)/service.yaml
+    - task: PowerShell@2
+      displayName: Replace dynamic string tokens in ingress_route.yaml
+      inputs:
+        targetType: inline
+        script: |
+          (Get-Content -Path $(deploymentConfigsFolder)/ingress_route.yaml -Raw) | Foreach-Object {
+           $_ -replace '##SERVICE_NAME##', '$(serviceName)' `
+              -replace '##ENVIRONMENT##', '$(environment)' `
+              -replace '##SERVICE_ROUTE_PREFIX##', '$(serviceRoutePrefix)' `
+              -replace '##SERVICE_NAMESPACE##', '$(serviceNamespace)' `
+           } | Set-Content -Path $(deploymentConfigsFolder)/ingress_route.yaml
+    - task: PowerShell@2
+      displayName: Replace dynamic string tokens in autoscale.yaml
+      inputs:
+        targetType: inline
+        script: |
+          (Get-Content -Path $(deploymentConfigsFolder)/autoscale.yaml -Raw) | Foreach-Object {
+           $_ -replace '##SERVICE_NAME##', '$(serviceName)' `
+              -replace '##ENVIRONMENT##', '$(environment)' `
+              -replace '##SERVICE_NAMESPACE##', '$(serviceNamespace)' `
+              -replace '##MIN_REPLICAS##', '$(minReplicas)' `
+              -replace '##MAX_REPLICAS##', '$(maxReplicas)' `
+              -replace '##CPU_SCALE_THRESHOLD##', '$(cpuScaleThreshold)' `
+              -replace '##MEMORY_SCALE_THRESHOLD##', '$(memoryScaleThreshold)' `
+           } | Set-Content -Path $(deploymentConfigsFolder)/autoscale.yaml
+    - task: Kubernetes@1
+      displayName: Create namespace
+      inputs:
+        connectionType: 'Azure Resource Manager'
+        azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
+        azureResourceGroup: $(resourceGroup)
+        kubernetesCluster: $(location)-$(environment)-flow-cluster
+        namespace: $(serviceNamespace)
+        command: apply
+        arguments: -f $(deploymentConfigsFolder)/namespace.yaml
+    - task: Kubernetes@1
+      displayName: Apply deployment
+      inputs:
+        connectionType: 'Azure Resource Manager'
+        azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
+        azureResourceGroup: $(resourceGroup)
+        kubernetesCluster: $(location)-$(environment)-flow-cluster
+        namespace: $(serviceNamespace)
+        command: apply
+        arguments: -f $(deploymentConfigsFolder)/deployment.yaml
+    - task: Kubernetes@1
+      displayName: Apply service
+      inputs:
+        connectionType: 'Azure Resource Manager'
+        azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
+        azureResourceGroup: $(resourceGroup)
+        kubernetesCluster: $(location)-$(environment)-flow-cluster
+        namespace: $(serviceNamespace)
+        command: apply
+        arguments: -f $(deploymentConfigsFolder)/service.yaml
+    - task: Kubernetes@1
+      displayName: Apply autoscale
+      inputs:
+        connectionType: 'Azure Resource Manager'
+        azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
+        azureResourceGroup: $(resourceGroup)
+        kubernetesCluster: $(location)-$(environment)-flow-cluster
+        namespace: $(serviceNamespace)
+        command: apply
+        arguments: -f $(deploymentConfigsFolder)/autoscale.yaml
+    - task: Kubernetes@1
+      displayName: Apply ingress route
+      inputs:
+        connectionType: 'Azure Resource Manager'
+        azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
+        azureResourceGroup: $(resourceGroup)
+        kubernetesCluster: $(location)-$(environment)-flow-cluster
+        namespace: $(serviceNamespace)
+        command: apply
+        arguments: -f $(deploymentConfigsFolder)/ingress_route.yaml
