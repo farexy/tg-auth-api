@@ -29,7 +29,7 @@ services:
   script:
       - cd src
       - docker login $CONTAINER_REGISTRY -u $SERVICE_USER -p $SERVICE_USER_PWD
-      - docker build -t $CONTAINER_REGISTRY/$SERVICE_NAME:$ENV-$CI_PIPELINE_IID .
+      - docker build -t $CONTAINER_REGISTRY/$SERVICE_NAME:$ENVIRONMENT-$CI_PIPELINE_IID .
       - docker push $CONTAINER_REGISTRY/$SERVICE_NAME:$ENVIRONMENT-$CI_PIPELINE_IID
 
 'DEV Publish docker image':
