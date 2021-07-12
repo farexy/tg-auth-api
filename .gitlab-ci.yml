@@ -1,0 +1,41 @@
+stages:
+  - test
+  - release
+  - deploy_dev
+
+variables:
+  CONTAINER_REGISTRY: eastus2tgacr.azurecr.io
+  SERVICE_NAME: auth
+
+image: docker:18.09.7
+services:
+  - docker:18.09.7-dind
+
+'Test code':
+  stage: test
+  image: mcr.microsoft.com/dotnet/sdk:5.0
+  script:
+      - dotnet build ./src
+  only:
+    - merge_requests
+
+.release:
+  image: docker:18.09.7
+  services:
+    - docker:18.09.7-dind
+  script:
+      - docker login $CONTAINER_REGISTRY -u $SERVICE_USER -p $SERVICE_USER_PWD
+      - docker build -t $CONTAINER_REGISTRY/$SERVICE_NAME:$ENV-$CI_PIPELINE_IID .
+      - docker push $CONTAINER_REGISTRY/$SERVICE_NAME:$ENV-$CI_PIPELINE_IID
+
+'Release docker artifact':
+  stage: release
+  extends: .release
+  variables:
+    ENV: dev
+  only:
+    - master
+
+.deploy:
+  before_script:
+      - sed -i -e 's/##SERVICE_NAME##/$SERVICE_NAME/g' k8s/autoscale.yaml
