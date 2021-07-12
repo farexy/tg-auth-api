@@ -75,6 +75,9 @@ services:
       - sed -i -e 's/##ENVIRONMENT##/$ENVIRONMENT/g' k8s/ingress_route.yaml
       - sed -i -e 's/##SERVICE_ROUTE_PREFIX##/$SERVICE_ROUTE_PREFIX/g' k8s/ingress_route.yaml
 
+  script:
+    - echo 'TODO DEPLOY'    
+
 'DEV Deploy to cluster':
   stage: deploy_dev
   extends: .deploy
