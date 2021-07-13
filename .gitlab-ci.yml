@@ -33,50 +33,50 @@ services:
       - docker build -t $CONTAINER_REGISTRY/$SERVICE_NAME:$ENVIRONMENT-$CI_PIPELINE_IID .
       - docker push $CONTAINER_REGISTRY/$SERVICE_NAME:$ENVIRONMENT-$CI_PIPELINE_IID
 
-'DEV Publish docker image':
-  stage: release_dev
-  extends: .release
-  variables:
-    ENVIRONMENT: dev
-  only:
-    - master
+# 'DEV Publish docker image':
+#   stage: release_dev
+#   extends: .release
+#   variables:
+#     ENVIRONMENT: dev
+#   only:
+#     - master
 
 .deploy:
   image: eastus2tgacr.azurecr.io/apicirunner:latest
 
   script:
-    - sed -i -e 's/##SERVICE_NAMESPACE##/$SERVICE_NAMESPACE/g' k8s/namespace.yaml
-    - sed -i -e 's/##ENVIRONMENT##/$ENVIRONMENT/g' k8s/namespace.yaml
+    - sed -i -e 's/##SERVICE_NAMESPACE##/'$SERVICE_NAMESPACE'/g' k8s/namespace.yaml
+    - sed -i -e 's/##ENVIRONMENT##/'$ENVIRONMENT'/g' k8s/namespace.yaml
 
-    - sed -i -e 's/##SERVICE_NAME##/$SERVICE_NAME/g' k8s/deployment.yaml
-    - sed -i -e 's/##LOCATION##/$LOCATION/g' k8s/deployment.yaml
-    - sed -i -e 's/##INSTANCE_REPLICAS##/$INSTANCE_REPLICAS/g' k8s/deployment.yaml
-    - sed -i -e 's/##CONTAINER_REGISTRY##/$CONTAINER_REGISTRY/g' k8s/deployment.yaml
-    - sed -i -e 's/##IMAGE_TAG##/$ENVIRONMENT-$CI_PIPELINE_IID/g' k8s/deployment.yaml
-    - sed -i -e 's/##ASPNETCORE_ENVIRONMENT##/$ASPNETCORE_ENVIRONMENT/g' k8s/deployment.yaml
-    - sed -i -e 's/##SERVICE_NAMESPACE##/$SERVICE_NAMESPACE/g' k8s/deployment.yaml
-    - sed -i -e 's/##ENVIRONMENT##/$ENVIRONMENT/g' k8s/deployment.yaml
-    - sed -i -e 's/##MEMORY_REQUEST##/$MEMORY_REQUEST/g' k8s/deployment.yaml
-    - sed -i -e 's/##CPU_REQUEST##/$CPU_REQUEST/g' k8s/deployment.yaml
-    - sed -i -e 's/##MEMORY_LIMIT##/$MEMORY_LIMIT/g' k8s/deployment.yaml
-    - sed -i -e 's/##CPU_LIMIT##/$CPU_LIMIT/g' k8s/deployment.yaml
+    - sed -i -e 's/##SERVICE_NAME##/'$SERVICE_NAME'/g' k8s/deployment.yaml
+    - sed -i -e 's/##LOCATION##/'$LOCATION'/g' k8s/deployment.yaml
+    - sed -i -e 's/##INSTANCE_REPLICAS##/'$INSTANCE_REPLICAS'/g' k8s/deployment.yaml
+    - sed -i -e 's/##CONTAINER_REGISTRY##/'$CONTAINER_REGISTRY'/g' k8s/deployment.yaml
+    - sed -i -e 's/##IMAGE_TAG##/'$ENVIRONMENT-$CI_PIPELINE_IID'/g' k8s/deployment.yaml
+    - sed -i -e 's/##ASPNETCORE_ENVIRONMENT##/'$ASPNETCORE_ENVIRONMENT'/g' k8s/deployment.yaml
+    - sed -i -e 's/##SERVICE_NAMESPACE##/'$SERVICE_NAMESPACE'/g' k8s/deployment.yaml
+    - sed -i -e 's/##ENVIRONMENT##/'$ENVIRONMENT'/g' k8s/deployment.yaml
+    - sed -i -e 's/##MEMORY_REQUEST##/'$MEMORY_REQUEST'/g' k8s/deployment.yaml
+    - sed -i -e 's/##CPU_REQUEST##/'$CPU_REQUEST'/g' k8s/deployment.yaml
+    - sed -i -e 's/##MEMORY_LIMIT##/'$MEMORY_LIMIT'/g' k8s/deployment.yaml
+    - sed -i -e 's/##CPU_LIMIT##/'$CPU_LIMIT'/g' k8s/deployment.yaml
     
-    - sed -i -e 's/##SERVICE_NAME##/$SERVICE_NAME/g' k8s/service.yaml
-    - sed -i -e 's/##SERVICE_NAMESPACE##/$SERVICE_NAMESPACE/g' k8s/service.yaml
-    - sed -i -e 's/##ENVIRONMENT##/$ENVIRONMENT/g' k8s/service.yaml
+    - sed -i -e 's/##SERVICE_NAME##/'$SERVICE_NAME'/g' k8s/service.yaml
+    - sed -i -e 's/##SERVICE_NAMESPACE##/'$SERVICE_NAMESPACE'/g' k8s/service.yaml
+    - sed -i -e 's/##ENVIRONMENT##/'$ENVIRONMENT'/g' k8s/service.yaml
 
-    - sed -i -e 's/##SERVICE_NAME##/$SERVICE_NAME/g' k8s/autoscale.yaml
-    - sed -i -e 's/##ENVIRONMENT##/$ENVIRONMENT/g' k8s/autoscale.yaml
-    - sed -i -e 's/##SERVICE_NAMESPACE##/$SERVICE_NAMESPACE/g' k8s/autoscale.yaml
-    - sed -i -e 's/##MIN_REPLICAS##/$MIN_REPLICAS/g' k8s/autoscale.yaml
-    - sed -i -e 's/##MAX_REPLICAS##/$MAX_REPLICAS/g' k8s/autoscale.yaml
-    - sed -i -e 's/##CPU_SCALE_THRESHOLD##/$CPU_SCALE_THRESHOLD/g' k8s/autoscale.yaml
-    - sed -i -e 's/##MEMORY_SCALE_THRESHOLD##/$MEMORY_SCALE_THRESHOLD/g' k8s/autoscale.yaml
+    - sed -i -e 's/##SERVICE_NAME##/'$SERVICE_NAME'/g' k8s/autoscale.yaml
+    - sed -i -e 's/##ENVIRONMENT##/'$ENVIRONMENT'/g' k8s/autoscale.yaml
+    - sed -i -e 's/##SERVICE_NAMESPACE##/'$SERVICE_NAMESPACE'/g' k8s/autoscale.yaml
+    - sed -i -e 's/##MIN_REPLICAS##/'$MIN_REPLICAS'/g' k8s/autoscale.yaml
+    - sed -i -e 's/##MAX_REPLICAS##/'$MAX_REPLICAS'/g' k8s/autoscale.yaml
+    - sed -i -e 's/##CPU_SCALE_THRESHOLD##/'$CPU_SCALE_THRESHOLD'/g' k8s/autoscale.yaml
+    - sed -i -e 's/##MEMORY_SCALE_THRESHOLD##/'$MEMORY_SCALE_THRESHOLD'/g' k8s/autoscale.yaml
 
-    - sed -i -e 's/##SERVICE_NAME##/$SERVICE_NAME/g' k8s/ingress_route.yaml
-    - sed -i -e 's/##SERVICE_NAMESPACE##/$SERVICE_NAMESPACE/g' k8s/ingress_route.yaml
-    - sed -i -e 's/##ENVIRONMENT##/$ENVIRONMENT/g' k8s/ingress_route.yaml
-    - sed -i -e 's/##SERVICE_ROUTE_PREFIX##/$SERVICE_ROUTE_PREFIX/g' k8s/ingress_route.yaml
+    - sed -i -e 's/##SERVICE_NAME##/'$SERVICE_NAME'/g' k8s/ingress_route.yaml
+    - sed -i -e 's/##SERVICE_NAMESPACE##/'$SERVICE_NAMESPACE'/g' k8s/ingress_route.yaml
+    - sed -i -e 's/##ENVIRONMENT##/'$ENVIRONMENT'/g' k8s/ingress_route.yaml
+    - sed -i -e 's/##SERVICE_ROUTE_PREFIX##/'$SERVICE_ROUTE_PREFIX'/g' k8s/ingress_route.yaml
 
     - cat k8s/deployment.yaml
 
