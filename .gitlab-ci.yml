@@ -9,6 +9,7 @@ variables:
   SERVICE_NAMESPACE: 'tg'
   LOCATION: 'eastus2'
   SERVICE_ROUTE_PREFIX: 'auth'
+  TENANT_ID: 076a5d2a-ce27-485a-a9d1-74ee993836cb
 
 image: docker:18.09.7
 services:
@@ -77,7 +78,7 @@ services:
       - sed -i -e 's/##SERVICE_ROUTE_PREFIX##/$SERVICE_ROUTE_PREFIX/g' k8s/ingress_route.yaml
 
   script:
-    - az login --service-principal -u $SERVICE_USER -p $SERVICE_USER_PWD
+    - az login --service-principal -u $SERVICE_USER -p $SERVICE_USER_PWD --tenant $TENANT_ID
     - az aks get-credentials -n $CLUSTER_NAME -g tg-$ENVIRONMENT
     - kubectl apply -f k8s/namespace.yaml
     - kubectl apply -f k8s/deployment.yaml
