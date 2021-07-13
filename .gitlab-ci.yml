@@ -1,6 +1,6 @@
 stages:
   - test
-  # - release_dev
+  - release_dev
   - deploy_dev
 
 variables:
@@ -33,13 +33,13 @@ services:
       - docker build -t $CONTAINER_REGISTRY/$SERVICE_NAME:$ENVIRONMENT-$CI_PIPELINE_IID .
       - docker push $CONTAINER_REGISTRY/$SERVICE_NAME:$ENVIRONMENT-$CI_PIPELINE_IID
 
-# 'DEV Publish docker image':
-#   stage: release_dev
-#   extends: .release
-#   variables:
-#     ENVIRONMENT: dev
-#   only:
-#     - master
+'DEV Publish docker image':
+  stage: release_dev
+  extends: .release
+  variables:
+    ENVIRONMENT: dev
+  only:
+    - master
 
 .deploy:
   image: eastus2tgacr.azurecr.io/apicirunner:latest
@@ -78,15 +78,13 @@ services:
     - sed -i -e 's/##ENVIRONMENT##/'$ENVIRONMENT'/g' k8s/ingress_route.yaml
     - sed -i -e 's/##SERVICE_ROUTE_PREFIX##/'$SERVICE_ROUTE_PREFIX'/g' k8s/ingress_route.yaml
 
-    - cat k8s/deployment.yaml
-
-    # - az login --service-principal -u $SERVICE_USER -p $SERVICE_USER_PWD --tenant $TENANT_ID
-    # - az aks get-credentials -n $CLUSTER_NAME -g tg-$ENVIRONMENT
-    # - kubectl apply -f k8s/namespace.yaml
-    # - kubectl apply -f k8s/deployment.yaml
-    # - kubectl apply -f k8s/service.yaml
-    # - kubectl apply -f k8s/autoscale.yaml
-    # - kubectl apply -f k8s/ingress_route.yaml
+    - az login --service-principal -u $SERVICE_USER -p $SERVICE_USER_PWD --tenant $TENANT_ID
+    - az aks get-credentials -n $CLUSTER_NAME -g tg-$ENVIRONMENT
+    - kubectl apply -f k8s/namespace.yaml
+    - kubectl apply -f k8s/deployment.yaml
+    - kubectl apply -f k8s/service.yaml
+    - kubectl apply -f k8s/autoscale.yaml
+    - kubectl apply -f k8s/ingress_route.yaml
 
 'DEV Deploy to cluster': 
   stage: deploy_dev
