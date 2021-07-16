@@ -10,7 +10,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-  - match: Host(`##ENVIRONMENT##-api.bizprotect.org`) && PathPrefix(`/##SERVICE_ROUTE_PREFIX##`)
+  - match: Host(`##ENVIRONMENT##-tg-api.somniumgame.com`) && PathPrefix(`/##SERVICE_ROUTE_PREFIX##`)
     kind: Rule
     services:
     - name: ##SERVICE_NAME##-service
