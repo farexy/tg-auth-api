@@ -6,7 +6,7 @@ metadata:
   labels: 
     app: ##SERVICE_NAME##
     environment: ##ENVIRONMENT##
-    aadpodidbinding: ##LOCATION##-##ENVIRONMENT##-flow-azure-identity
+    aadpodidbinding: ##LOCATION##-##ENVIRONMENT##-tg-azure-identity
 spec: 
   replicas: ##INSTANCE_REPLICAS##
   selector: 
@@ -17,7 +17,7 @@ spec:
       labels: 
         app: ##SERVICE_NAME##
         environment: ##ENVIRONMENT##
-        aadpodidbinding: ##LOCATION##-##ENVIRONMENT##-flow-azure-identity
+        aadpodidbinding: ##LOCATION##-##ENVIRONMENT##-tg-azure-identity
     spec:
       nodeSelector:
         pool: services
