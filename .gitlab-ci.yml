@@ -61,6 +61,7 @@ services:
     - sed -i -e 's/##CPU_REQUEST##/'$CPU_REQUEST'/g' k8s/deployment.yaml
     - sed -i -e 's/##MEMORY_LIMIT##/'$MEMORY_LIMIT'/g' k8s/deployment.yaml
     - sed -i -e 's/##CPU_LIMIT##/'$CPU_LIMIT'/g' k8s/deployment.yaml
+    - sed -i -e 's/##HEALTH_CHECK_TIMEOUT##/'$HEALTH_CHECK_TIMEOUT'/g' k8s/deployment.yaml
     
     - sed -i -e 's/##SERVICE_NAME##/'$SERVICE_NAME'/g' k8s/service.yaml
     - sed -i -e 's/##SERVICE_NAMESPACE##/'$SERVICE_NAMESPACE'/g' k8s/service.yaml
@@ -102,6 +103,7 @@ services:
     MEMORY_LIMIT: '500M'
     MEMORY_SCALE_THRESHOLD: '425M'
     CLUSTER_NAME: eastus2-dev-tg-cluster
+    HEALTH_CHECK_TIMEOUT: 1200
   only:
     - master
       
