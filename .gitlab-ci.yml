@@ -103,7 +103,5 @@ services:
     MEMORY_LIMIT: '500M'
     MEMORY_SCALE_THRESHOLD: '425M'
     CLUSTER_NAME: eastus2-dev-tg-cluster
-    HEALTH_CHECK_TIMEOUT: 3600
   only:
     - master
-      
