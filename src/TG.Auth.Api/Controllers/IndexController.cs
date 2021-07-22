@@ -13,7 +13,7 @@ namespace TG.Auth.Api.Controllers
         private readonly ILogger _logger;
         private readonly IConfiguration _configuration;
 
-        public IndexController(ILogger logger, IConfiguration configuration, ILogger<IndexController> logger1)
+        public IndexController(IConfiguration configuration, ILogger<IndexController> logger)
         {
             _logger = logger;
             _configuration = configuration;
@@ -21,7 +21,7 @@ namespace TG.Auth.Api.Controllers
 
         [HttpGet]
         public string Get()
-        {
+        {  
             TgExecutionContext.TrySetTraceIdentifier("trece_id");
             _logger.LogError(new Exception(),"ERROR");
             return "Works " + _configuration.GetValue<string>("Secrets:Greeting");
