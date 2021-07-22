@@ -36,7 +36,7 @@ namespace TG.Auth.Api.App.Configuration
                     logging.ClearProviders();
 
                     var logLevelSwitch =
-                        new LoggingLevelSwitch(host.Configuration.GetValue<LogEventLevel>("Serilog:Debug"));
+                        new LoggingLevelSwitch(host.Configuration.GetValue<LogEventLevel>("Serilog:MinimumLevel"));
 
                     logging.Services.AddSingleton(logLevelSwitch);
 
