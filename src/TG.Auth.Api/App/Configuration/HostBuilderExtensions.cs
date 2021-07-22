@@ -27,7 +27,7 @@ namespace TG.Auth.Api.App.Configuration
                     new KeyVaultSecretManager());
             });
 
-        public static IHostBuilder ConfigureLogging(this IHostBuilder hostBuilder, string serviceName)
+        public static IHostBuilder ConfigureTgLogging(this IHostBuilder hostBuilder, string serviceName)
         {
             return hostBuilder.ConfigureLogging((host, logging) =>
             {

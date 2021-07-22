@@ -1,15 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Azure.Extensions.AspNetCore.Configuration.Secrets;
-using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using TG.Auth.Api.App.Configuration;
+using TG.Auth.Api.Config;
 using TG.Core.App;
 
 namespace TG.Auth.Api
@@ -25,6 +17,7 @@ namespace TG.Auth.Api
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureTgKeyVault()
+                .ConfigureTgLogging(ServiceConst.ServiceName)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder
