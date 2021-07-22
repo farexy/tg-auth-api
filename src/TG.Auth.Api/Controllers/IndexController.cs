@@ -1,7 +1,7 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Serilog;
+using Microsoft.Extensions.Logging;
 using TG.Auth.Api.App.Monitoring;
 using TG.Auth.Api.Config;
 
@@ -13,7 +13,7 @@ namespace TG.Auth.Api.Controllers
         private readonly ILogger _logger;
         private readonly IConfiguration _configuration;
 
-        public IndexController(ILogger logger, IConfiguration configuration)
+        public IndexController(ILogger logger, IConfiguration configuration, ILogger<IndexController> logger1)
         {
             _logger = logger;
             _configuration = configuration;
@@ -23,7 +23,7 @@ namespace TG.Auth.Api.Controllers
         public string Get()
         {
             TgExecutionContext.TrySetTraceIdentifier("trece_id");
-            _logger.Error("ERROR", new Exception());
+            _logger.LogError(new Exception(),"ERROR");
             return "Works " + _configuration.GetValue<string>("Secrets:Greeting");
         }
     }

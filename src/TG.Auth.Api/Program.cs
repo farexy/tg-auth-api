@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TG.Auth.Api.App.Configuration;
+using TG.Core.App;
 
 namespace TG.Auth.Api
 {
@@ -16,21 +18,17 @@ namespace TG.Auth.Api
     {
         public static void Main(string[] args)
         {
+            var c = new Class1();
             CreateHostBuilder(args).Build().Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((ctx, cfg) =>
-                {
-                    var appConfiguration = cfg.Build();
-                    cfg.AddAzureKeyVault(
-                        new SecretClient(new Uri(appConfiguration.GetConnectionString("KeyVault")), new DefaultAzureCredential(false)),
-                        new KeyVaultSecretManager());
-                })
+                .ConfigureTgKeyVault()
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    webBuilder
+                        .UseStartup<Startup>();
                 });
     }
 }

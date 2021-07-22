@@ -23,7 +23,6 @@ namespace TG.Auth.Api
         {
             services.AddControllers();
             services.AddHealthChecks();
-            services.AddConfiguredTgLogging(Configuration, ServiceConst.ServiceName);
             services.AddKubernetesTgApplicationInsights(Configuration);
         }
 
