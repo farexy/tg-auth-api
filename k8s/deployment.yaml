@@ -42,15 +42,15 @@ spec:
           limits:
             memory: "##MEMORY_LIMIT##"
             cpu: "##CPU_LIMIT##"
-        livenessProbe:
-          tcpSocket:
-            port: 80
-          initialDelaySeconds: 30
-          periodSeconds: 5
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 80
-          initialDelaySeconds: 35
-          periodSeconds: 10
-          timeoutSeconds: 5
+        # livenessProbe:
+        #   tcpSocket:
+        #     port: 80
+        #   initialDelaySeconds: 30
+        #   periodSeconds: 5
+        # readinessProbe:
+        #   httpGet:
+        #     path: /health
+        #     port: 80
+        #   initialDelaySeconds: 25
+        #   periodSeconds: 10
+        #   timeoutSeconds: 5

@@ -18,3 +18,10 @@ If you want to learn more about creating good readme files then refer the follow
 - [ASP.NET Core](https://github.com/aspnet/Home)
 - [Visual Studio Code](https://github.com/Microsoft/vscode)
 - [Chakra Core](https://github.com/Microsoft/ChakraCore)
+
+
+Nuget source:
+Name: gitlab
+Url: https://gitlab.com/api/v4/groups/12641724/-/packages/nuget/index.json
+Username: o.topchii
+Password: <gitlab token>

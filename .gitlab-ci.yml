@@ -29,6 +29,7 @@ services:
     - docker:18.09.7-dind
   script:
       - cd src
+      - sed 's/##CI_JOB_TOKEN##/'$CI_JOB_TOKEN'/g' .nuget.config > nuget.config
       - docker login $CONTAINER_REGISTRY -u $SERVICE_USER -p $SERVICE_USER_PWD
       - docker build -t $CONTAINER_REGISTRY/$SERVICE_NAME:$ENVIRONMENT-$CI_PIPELINE_IID .
       - docker push $CONTAINER_REGISTRY/$SERVICE_NAME:$ENVIRONMENT-$CI_PIPELINE_IID
@@ -60,6 +61,7 @@ services:
     - sed -i -e 's/##CPU_REQUEST##/'$CPU_REQUEST'/g' k8s/deployment.yaml
     - sed -i -e 's/##MEMORY_LIMIT##/'$MEMORY_LIMIT'/g' k8s/deployment.yaml
     - sed -i -e 's/##CPU_LIMIT##/'$CPU_LIMIT'/g' k8s/deployment.yaml
+    - sed -i -e 's/##HEALTH_CHECK_TIMEOUT##/'$HEALTH_CHECK_TIMEOUT'/g' k8s/deployment.yaml
     
     - sed -i -e 's/##SERVICE_NAME##/'$SERVICE_NAME'/g' k8s/service.yaml
     - sed -i -e 's/##SERVICE_NAMESPACE##/'$SERVICE_NAMESPACE'/g' k8s/service.yaml
@@ -105,4 +107,3 @@ services:
     CLUSTER_NAME: eastus2-dev-tg-cluster
   only:
     - master
-      
