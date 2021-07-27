@@ -89,6 +89,8 @@ services:
 'DEV Deploy to cluster': 
   stage: deploy_dev
   extends: .deploy
+  environment:
+    name: dev
   variables:
     ENVIRONMENT: dev
     ASPNETCORE_ENVIRONMENT: 'Development'
