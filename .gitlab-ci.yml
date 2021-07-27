@@ -11,10 +11,6 @@ variables:
   SERVICE_ROUTE_PREFIX: 'auth'
   TENANT_ID: 076a5d2a-ce27-485a-a9d1-74ee993836cb
 
-image: docker:18.09.7
-services:
-  - docker:18.09.7-dind
-
 'Test code':
   stage: test
   image: mcr.microsoft.com/dotnet/sdk:5.0
