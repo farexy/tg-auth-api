@@ -1,6 +1,6 @@
 stages:
   - test
-  - release_dev
+  - release
   - deploy_dev
 
 variables:
@@ -10,10 +10,6 @@ variables:
   LOCATION: 'eastus2'
   SERVICE_ROUTE_PREFIX: 'auth'
   TENANT_ID: 076a5d2a-ce27-485a-a9d1-74ee993836cb
-
-image: docker:18.09.7
-services:
-  - docker:18.09.7-dind
 
 'Test code':
   stage: test
@@ -31,14 +27,12 @@ services:
       - cd src
       - sed 's/##CI_JOB_TOKEN##/'$CI_JOB_TOKEN'/g' .nuget.config > nuget.config
       - docker login $CONTAINER_REGISTRY -u $SERVICE_USER -p $SERVICE_USER_PWD
-      - docker build -t $CONTAINER_REGISTRY/$SERVICE_NAME:$ENVIRONMENT-$CI_PIPELINE_IID .
-      - docker push $CONTAINER_REGISTRY/$SERVICE_NAME:$ENVIRONMENT-$CI_PIPELINE_IID
+      - docker build -t $CONTAINER_REGISTRY/$SERVICE_NAME:$CI_PIPELINE_IID .
+      - docker push $CONTAINER_REGISTRY/$SERVICE_NAME:$CI_PIPELINE_IID
 
-'DEV Publish docker image':
-  stage: release_dev
+'Publish docker image':
+  stage: release
   extends: .release
-  variables:
-    ENVIRONMENT: dev
   only:
     - master
 
@@ -53,7 +47,7 @@ services:
     - sed -i -e 's/##LOCATION##/'$LOCATION'/g' k8s/deployment.yaml
     - sed -i -e 's/##INSTANCE_REPLICAS##/'$INSTANCE_REPLICAS'/g' k8s/deployment.yaml
     - sed -i -e 's/##CONTAINER_REGISTRY##/'$CONTAINER_REGISTRY'/g' k8s/deployment.yaml
-    - sed -i -e 's/##IMAGE_TAG##/'$ENVIRONMENT-$CI_PIPELINE_IID'/g' k8s/deployment.yaml
+    - sed -i -e 's/##IMAGE_TAG##/'$CI_PIPELINE_IID'/g' k8s/deployment.yaml
     - sed -i -e 's/##ASPNETCORE_ENVIRONMENT##/'$ASPNETCORE_ENVIRONMENT'/g' k8s/deployment.yaml
     - sed -i -e 's/##SERVICE_NAMESPACE##/'$SERVICE_NAMESPACE'/g' k8s/deployment.yaml
     - sed -i -e 's/##ENVIRONMENT##/'$ENVIRONMENT'/g' k8s/deployment.yaml
@@ -91,6 +85,8 @@ services:
 'DEV Deploy to cluster': 
   stage: deploy_dev
   extends: .deploy
+  environment:
+    name: dev
   variables:
     ENVIRONMENT: dev
     ASPNETCORE_ENVIRONMENT: 'Development'
