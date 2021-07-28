@@ -2,8 +2,8 @@ using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using TG.Auth.Api.App.Monitoring;
 using TG.Auth.Api.Config;
+using TG.Core.App.Configuration.Monitoring;
 
 namespace TG.Auth.Api.Controllers
 {

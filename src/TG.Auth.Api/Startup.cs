@@ -3,8 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using TG.Auth.Api.App.Monitoring;
-using TG.Auth.Api.Config;
+using TG.Core.App.Configuration.Monitoring;
 
 namespace TG.Auth.Api
 {
@@ -23,6 +22,7 @@ namespace TG.Auth.Api
         {
             services.AddControllers();
             services.AddHealthChecks();
+                //.AddNpgSqlHealthCheck();
             services.AddKubernetesTgApplicationInsights(Configuration);
         }
 
