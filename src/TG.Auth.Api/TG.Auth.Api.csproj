@@ -7,6 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="MediatR" Version="9.0.0" />
+      <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="9.0.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.0.0" />
       <PackageReference Include="TG.Core.App" Version="1.0.3" />
       <PackageReference Include="TG.Core.Db.Postgres" Version="1.0.0" />
     </ItemGroup>
