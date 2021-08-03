@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TG.Auth.Api.Application.Tokens;
 using TG.Auth.Api.Config;
+using TG.Auth.Api.Models.Request;
 using TG.Auth.Api.Models.Response;
 
 namespace TG.Auth.Api.Controllers
@@ -20,10 +21,10 @@ namespace TG.Auth.Api.Controllers
             _mediator = mediator;
         }
 
-        [HttpPost("test")]
-        public async Task<ActionResult<TokensResponse>> CreateTest()
+        [HttpPost("google")]
+        public async Task<ActionResult<TokensResponse>> CreateByGoogleAuth([FromBody] TokenByGoogleAuthRequest request)
         {
-            var cmd = new CreateTokenTestCommand();
+            var cmd = new CreateTokensByGoogleAuthCommand(request.IdToken);
             var result = await _mediator.Send(cmd);
             return result;
         }

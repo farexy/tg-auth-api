@@ -1,4 +1,5 @@
 using System;
+using TG.Auth.Api.Constants;
 
 namespace TG.Auth.Api.Entities
 {
@@ -7,6 +8,8 @@ namespace TG.Auth.Api.Entities
         public Guid Id { get; set; }
         
         public Guid UserId { get; set; }
+        
+        public AuthType AuthType { get; set; }
         
         public DateTime IssuedTime { get; set; }
 
