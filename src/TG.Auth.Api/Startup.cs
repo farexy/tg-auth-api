@@ -3,7 +3,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TG.Auth.Api.Db;
+using TG.Auth.Api.Services;
+using TG.Core.App.Configuration;
+using TG.Core.App.Configuration.Auth;
 using TG.Core.App.Configuration.Monitoring;
+using TG.Core.App.Extensions;
+using TG.Core.Db.Postgres;
 
 namespace TG.Auth.Api
 {
@@ -20,10 +26,28 @@ namespace TG.Auth.Api
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers()
+                .AddTgJsonOptions()
+                .AddInvalidModelStateHandling(); 
             services.AddHealthChecks();
                 //.AddNpgSqlHealthCheck();
             services.AddKubernetesTgApplicationInsights(Configuration);
+            services.AddApiVersioning();
+
+            services.AddPostgresDb<ApplicationDbContext>(Configuration);
+
+            services.AddCors(cors => cors.AddDefaultPolicy(p =>
+            {
+                p.AllowAnyHeader();
+                p.AllowAnyMethod();
+                p.AllowAnyOrigin();
+            }));
+
+            services.AddTgAuth(Configuration);
+
+            services.AddTransient<ICryptoResistantStringGenerator, CryptoResistantStringGenerator>();
+            services.AddScoped<ITokenService, TokenService>();
+            services.AddHttpClient<IGoogleApiClient, GoogleApiClient>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

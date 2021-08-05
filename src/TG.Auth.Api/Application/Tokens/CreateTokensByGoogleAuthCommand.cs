@@ -3,29 +3,34 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using TG.Auth.Api.Constants;
 using TG.Auth.Api.Db;
 using TG.Auth.Api.Entities;
 using TG.Auth.Api.Models.Response;
 using TG.Auth.Api.Services;
 using TG.Auth.Api.Services.Dto;
+using TG.Core.App.OperationResults;
 
 namespace TG.Auth.Api.Application.Tokens
 {
-    public record CreateTokensByGoogleAuthCommand(string IdToken) : IRequest<TokensResponse>;
+    public record CreateTokensByGoogleAuthCommand(string IdToken) : IRequest<OperationResult<TokensResponse>>;
     
-    public class CreateTokenTestCommandHandler : IRequestHandler<CreateTokensByGoogleAuthCommand, TokensResponse>
+    public class CreateTokenTestCommandHandler : IRequestHandler<CreateTokensByGoogleAuthCommand, OperationResult<TokensResponse>>
     {
         private readonly ApplicationDbContext _dbContext;
 
         private readonly IGoogleApiClient _googleApiClient;
+        private readonly ITokenService _tokenService;
 
-        public CreateTokenTestCommandHandler(ApplicationDbContext dbContext, IGoogleApiClient googleApiClient)
+        public CreateTokenTestCommandHandler(ApplicationDbContext dbContext, IGoogleApiClient googleApiClient,
+            ITokenService tokenService)
         {
             _dbContext = dbContext;
             _googleApiClient = googleApiClient;
+            _tokenService = tokenService;
         }
 
-        public async Task<TokensResponse> Handle(CreateTokensByGoogleAuthCommand command, CancellationToken cancellationToken)
+        public async Task<OperationResult<TokensResponse>> Handle(CreateTokensByGoogleAuthCommand command, CancellationToken cancellationToken)
         {
             var tokenPayload = await _googleApiClient.ValidateAndParseTokenAsync(command.IdToken, cancellationToken);
             if (tokenPayload is null)
@@ -37,14 +42,10 @@ namespace TG.Auth.Api.Application.Tokens
                 .FirstOrDefaultAsync(g => g.Id == tokenPayload.Subject, cancellationToken);
 
             googleAccount ??= await CreateUserAsync(tokenPayload, cancellationToken);
+
+            var tokens = await _tokenService.CreateTokenAsync(googleAccount.TgUser!, AuthType.Google, cancellationToken);
             
-            var token = new Token
-            {
-                Id = Guid.NewGuid(),
-                UserId = googleAccount.TgUserId,
-                RefreshToken = ""
-            };
-            return new TokensResponse();
+            return tokens;
         }
 
         private async Task<GoogleAccount> CreateUserAsync(GoogleTokenPayload payload, CancellationToken cancellationToken)

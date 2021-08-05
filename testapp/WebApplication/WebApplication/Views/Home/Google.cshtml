@@ -1,6 +1,7 @@
 ﻿<script>
     var GoogleAuth;
     var SCOPE = 'https://www.googleapis.com/auth/drive.metadata.readonly';
+    var SERVER_URL = 'http://localhost:60001/auth/v1'
     function handleClientLoad() {
       // Load the API's client and auth2 modules.
       // Call the initClient function after the modules load.
@@ -62,6 +63,8 @@
         $('#revoke-access-button').css('display', 'inline-block');
         $('#auth-status').html('You are currently signed in and have granted ' +
             'access to this app.');
+        
+        tgLogin();
       } else {
         $('#sign-in-or-out-button').html('Sign In/Authorize');
         $('#revoke-access-button').css('display', 'none');
@@ -72,6 +75,19 @@
   
     function updateSigninStatus() {
       setSigninStatus();
+    }
+    
+    function tgLogin() {
+        var idToken = GoogleAuth.getAuthResponse().id_token;
+        fetch(SERVER_URL + '/tokens/google',{
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            'idToken': idToken,
+          })
+        })
     }
   </script>
   

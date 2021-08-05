@@ -5,11 +5,13 @@ using TG.Auth.Api.Application.Tokens;
 using TG.Auth.Api.Config;
 using TG.Auth.Api.Models.Request;
 using TG.Auth.Api.Models.Response;
+using TG.Core.App.Constants;
+using TG.Core.App.OperationResults;
 
 namespace TG.Auth.Api.Controllers
 {
     [ApiController]
-    // [ApiVersion(ApiVersions.V1)]
+    [ApiVersion(ApiVersions.V1)]
     // [ProducesJsonContent]
     [Route(ServiceConst.RoutePrefix)]
     public class TokensController : ControllerBase
@@ -26,7 +28,17 @@ namespace TG.Auth.Api.Controllers
         {
             var cmd = new CreateTokensByGoogleAuthCommand(request.IdToken);
             var result = await _mediator.Send(cmd);
-            return result;
+            return result.ToActionResult()
+                .Created();
+        }
+        
+        [HttpPut]
+        public async Task<ActionResult<TokensResponse>> Refresh([FromBody] RefreshTokenRequest request)
+        {
+            var cmd = new RefreshTokenCommand(request.RefreshToken);
+            var result = await _mediator.Send(cmd);
+            return result.ToActionResult()
+                .Ok();
         }
     }
 }

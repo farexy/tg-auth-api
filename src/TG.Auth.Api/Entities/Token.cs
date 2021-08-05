@@ -15,6 +15,8 @@ namespace TG.Auth.Api.Entities
 
         public DateTime ExpirationTime { get; set; }
 
-        public string RefreshToken { get; set; } = default!;
+        public string RefreshSecret { get; set; } = default!;
+        
+        public User? User { get; set; }
     }
 }
