@@ -1,9 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using TG.Auth.Api.Entities;
 
 namespace TG.Auth.Api.Services
 {
     public interface ITokenService
     {
-        Task GenerateTokenPairAsync();
+        string GenerateTokenPair(User user);
     }
 }
