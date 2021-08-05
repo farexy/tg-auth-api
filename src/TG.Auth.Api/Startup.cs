@@ -1,14 +1,15 @@
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TG.Auth.Api.Config.Options;
 using TG.Auth.Api.Db;
 using TG.Auth.Api.Services;
 using TG.Core.App.Configuration;
 using TG.Core.App.Configuration.Auth;
 using TG.Core.App.Configuration.Monitoring;
-using TG.Core.App.Extensions;
 using TG.Core.Db.Postgres;
 
 namespace TG.Auth.Api
@@ -44,7 +45,11 @@ namespace TG.Auth.Api
             }));
 
             services.AddTgAuth(Configuration);
+            services.AddMediatR(typeof(Startup));
 
+            services.Configure<AuthJwtTokenOptions>(Configuration.GetSection(nameof(JwtTokenOptions)));
+                
+            services.AddTgServices();
             services.AddTransient<ICryptoResistantStringGenerator, CryptoResistantStringGenerator>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddHttpClient<IGoogleApiClient, GoogleApiClient>();
@@ -58,6 +63,7 @@ namespace TG.Auth.Api
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseCors();
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>

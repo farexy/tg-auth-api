@@ -9,6 +9,7 @@ using TG.Auth.Api.Entities;
 using TG.Auth.Api.Models.Response;
 using TG.Auth.Api.Services;
 using TG.Auth.Api.Services.Dto;
+using TG.Core.App.Constants;
 using TG.Core.App.OperationResults;
 
 namespace TG.Auth.Api.Application.Tokens
@@ -47,7 +48,7 @@ namespace TG.Auth.Api.Application.Tokens
             
             return tokens;
         }
-
+        
         private async Task<GoogleAccount> CreateUserAsync(GoogleTokenPayload payload, CancellationToken cancellationToken)
         {
             var user = new User
@@ -55,6 +56,10 @@ namespace TG.Auth.Api.Application.Tokens
                 Id = Guid.NewGuid(),
                 GoogleAccountId = payload.Subject,
                 Login = payload.Email,
+                Email = payload.Email,
+                FirstName = payload.GivenName,
+                LastName = payload.FamilyName,
+                Roles = new [] {UserRoles.GoogleUser}
             };
 
             var googleAccount = new GoogleAccount

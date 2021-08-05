@@ -142,7 +142,7 @@ namespace TG.Auth.Api.Services
         }
 
         private DateTime RefreshTokenExpirationTime =>
-            _dateTimeProvider.UtcNow.AddSeconds(_jwtTokenSettings.Value.RefreshExpirationTimeSec);
+            _dateTimeProvider.UtcNow.AddMinutes(_jwtTokenSettings.Value.RefreshExpirationTimeMin);
         
         private TokenValidationParameters ValidationParameters
         {

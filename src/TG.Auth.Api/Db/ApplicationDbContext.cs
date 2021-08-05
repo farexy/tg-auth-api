@@ -6,9 +6,9 @@ namespace TG.Auth.Api.Db
 {
     public class ApplicationDbContext : TgDbContext
     {
-        public DbSet<User> Users { get; set; }
-        public DbSet<Token> Tokens { get; set; }
-        public DbSet<GoogleAccount> GoogleAccounts { get; set; }
+        public DbSet<User> Users { get; set; } = default!;
+        public DbSet<Token> Tokens { get; set; } = default!;
+        public DbSet<GoogleAccount> GoogleAccounts { get; set; } = default!;
         
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {

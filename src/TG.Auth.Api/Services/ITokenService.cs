@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using TG.Auth.Api.Constants;
 using TG.Auth.Api.Entities;

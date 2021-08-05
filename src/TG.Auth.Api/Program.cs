@@ -12,7 +12,7 @@ namespace TG.Auth.Api
             CreateHostBuilder(args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
+        private static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureTgKeyVault()
                 .ConfigureTgLogging(ServiceConst.ServiceName)

@@ -78,7 +78,7 @@
     }
     
     function tgLogin() {
-        var idToken = GoogleAuth.getAuthResponse().id_token;
+        var idToken = GoogleAuth.currentUser.get().Zb.id_token;
         fetch(SERVER_URL + '/tokens/google',{
           method: 'POST',
           headers: {

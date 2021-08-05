@@ -6,7 +6,7 @@ namespace TG.Auth.Api.Config.Options
     {
         public long AccessExpirationTimeSec { get; set; }
 
-        public long RefreshExpirationTimeSec { get; set; }
+        public long RefreshExpirationTimeMin { get; set; }
 
         public string PrivateKey { get; set; } = default!;
         
