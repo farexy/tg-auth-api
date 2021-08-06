@@ -1,13 +1,16 @@
 using System;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using TG.Auth.Api.Config;
 using TG.Core.App.Configuration.Monitoring;
+using TG.Core.App.Constants;
 
 namespace TG.Auth.Api.Controllers
 {
     [Route(ServiceConst.RoutePrefix)]
+    [Authorize(Roles = TgUserRoles.GoogleUser)]
     public class IndexController : ControllerBase
     {
         private readonly ILogger _logger;

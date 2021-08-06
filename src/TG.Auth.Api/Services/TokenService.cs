@@ -27,14 +27,16 @@ namespace TG.Auth.Api.Services
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly IOptionsSnapshot<AuthJwtTokenOptions> _jwtTokenSettings;
         private readonly ApplicationDbContext _dbContext;
+        private readonly IRsaParser _rsaParser;
 
         public TokenService(ICryptoResistantStringGenerator cryptoResistantStringGenerator, IDateTimeProvider dateTimeProvider,
-            IOptionsSnapshot<AuthJwtTokenOptions> jwtTokenSettings, ApplicationDbContext dbContext)
+            IOptionsSnapshot<AuthJwtTokenOptions> jwtTokenSettings, ApplicationDbContext dbContext, IRsaParser rsaParser)
         {
             _cryptoResistantStringGenerator = cryptoResistantStringGenerator;
             _dateTimeProvider = dateTimeProvider;
             _jwtTokenSettings = jwtTokenSettings;
             _dbContext = dbContext;
+            _rsaParser = rsaParser;
         }
         
         public async Task<TokensResponse> CreateTokenAsync(User user, AuthType authType, CancellationToken cancellationToken)
@@ -113,7 +115,8 @@ namespace TG.Auth.Api.Services
                 [TgClaimNames.Roles] = user.Roles.Select(r => r.ToString()),
             };
 
-            var credentials = new SigningCredentials(settings.PrivateKey.AsRsaPrivateKey(), SecurityAlgorithms.RsaSha512);
+            var rsaPrivateKey = _rsaParser.ParseRsaPrivateKey(settings.PrivateKey);
+            var credentials = new SigningCredentials(rsaPrivateKey, SecurityAlgorithms.RsaSha512);
             var header = new JwtHeader(credentials);
             var jwtToken = new JwtSecurityToken(header, accessTokenPayload);
             var handler = new JwtSecurityTokenHandler();

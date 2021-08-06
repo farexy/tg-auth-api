@@ -4,12 +4,15 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TG.Auth.Api.Config;
 using TG.Auth.Api.Config.Options;
 using TG.Auth.Api.Db;
 using TG.Auth.Api.Services;
 using TG.Core.App.Configuration;
 using TG.Core.App.Configuration.Auth;
 using TG.Core.App.Configuration.Monitoring;
+using TG.Core.App.Middlewares;
+using TG.Core.App.Swagger;
 using TG.Core.Db.Postgres;
 
 namespace TG.Auth.Api
@@ -53,6 +56,13 @@ namespace TG.Auth.Api
             services.AddTransient<ICryptoResistantStringGenerator, CryptoResistantStringGenerator>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddHttpClient<IGoogleApiClient, GoogleApiClient>();
+
+            services.AddTgSwagger(opt =>
+            {
+                opt.ServiceName = ServiceConst.ServiceName;
+                opt.ProjectName = ServiceConst.ProjectName;
+                opt.AppVersion = "1";
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -63,8 +73,18 @@ namespace TG.Auth.Api
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseMiddleware<ErrorHandlingMiddleware>();
+
+            app.UseTgSwagger();
+
             app.UseCors();
+
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseMiddleware<TracingMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
