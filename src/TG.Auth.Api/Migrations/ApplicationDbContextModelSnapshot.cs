@@ -20,14 +20,17 @@ namespace TG.Auth.Api.Migrations
                 .HasAnnotation("ProductVersion", "5.0.8")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-            modelBuilder.Entity("TG.Auth.Api.Entities.GoogleAccount", b =>
+            modelBuilder.Entity("TG.Auth.Api.Entities.ExternalAccount", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text")
                         .HasColumnName("id");
 
+                    b.Property<int>("Type")
+                        .HasColumnType("integer")
+                        .HasColumnName("type");
+
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("email");
 
@@ -35,13 +38,13 @@ namespace TG.Auth.Api.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("tg_user_id");
 
-                    b.HasKey("Id")
-                        .HasName("pk_google_accounts");
+                    b.HasKey("Id", "Type")
+                        .HasName("pk_external_accounts");
 
                     b.HasIndex("TgUserId")
-                        .HasDatabaseName("ix_google_accounts_tg_user_id");
+                        .HasDatabaseName("ix_external_accounts_tg_user_id");
 
-                    b.ToTable("google_accounts");
+                    b.ToTable("external_accounts");
                 });
 
             modelBuilder.Entity("TG.Auth.Api.Entities.Token", b =>
@@ -98,10 +101,6 @@ namespace TG.Auth.Api.Migrations
                         .HasColumnType("text")
                         .HasColumnName("first_name");
 
-                    b.Property<string>("GoogleAccountId")
-                        .HasColumnType("text")
-                        .HasColumnName("google_account_id");
-
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("text")
@@ -123,12 +122,12 @@ namespace TG.Auth.Api.Migrations
                     b.ToTable("users");
                 });
 
-            modelBuilder.Entity("TG.Auth.Api.Entities.GoogleAccount", b =>
+            modelBuilder.Entity("TG.Auth.Api.Entities.ExternalAccount", b =>
                 {
                     b.HasOne("TG.Auth.Api.Entities.User", "TgUser")
                         .WithMany()
                         .HasForeignKey("TgUserId")
-                        .HasConstraintName("fk_google_accounts_users_tg_user_id")
+                        .HasConstraintName("fk_external_accounts_users_tg_user_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

@@ -4,11 +4,11 @@ using TG.Auth.Api.Entities;
 
 namespace TG.Auth.Api.Db.EfConfiguration
 {
-    public class GoogleAccountConfiguration : IEntityTypeConfiguration<GoogleAccount>
+    public class ExternalAccountConfiguration : IEntityTypeConfiguration<ExternalAccount>
     {
-        public void Configure(EntityTypeBuilder<GoogleAccount> entity)
+        public void Configure(EntityTypeBuilder<ExternalAccount> entity)
         {
-            entity.HasKey(a => a.Id);
+            entity.HasKey(a => new { a.Id, a.Type });
             entity.HasOne(a => a.TgUser)
                 .WithMany()
                 .HasForeignKey(a => a.TgUserId);

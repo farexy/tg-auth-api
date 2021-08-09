@@ -51,11 +51,13 @@ namespace TG.Auth.Api
             services.AddMediatR(typeof(Startup));
 
             services.Configure<AuthJwtTokenOptions>(Configuration.GetSection(nameof(JwtTokenOptions)));
+            services.Configure<FacebookOptions>(Configuration.GetSection(nameof(FacebookOptions)));
                 
             services.AddTgServices();
             services.AddTransient<ICryptoResistantStringGenerator, CryptoResistantStringGenerator>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddHttpClient<IGoogleApiClient, GoogleApiClient>();
+            services.AddHttpClient<IFbApiClient, FbApiClient>();
 
             services.AddTgSwagger(opt =>
             {

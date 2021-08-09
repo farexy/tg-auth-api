@@ -6,6 +6,6 @@ namespace TG.Auth.Api.Services
 {
     public interface IGoogleApiClient
     {
-        Task<GoogleTokenPayload?> ValidateAndParseTokenAsync(string idToken, CancellationToken cancellationToken);
+        Task<GoogleTokenPayload?> GetUserTokenPayloadAsync(string idToken, CancellationToken cancellationToken);
     }
 }

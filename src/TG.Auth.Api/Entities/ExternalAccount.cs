@@ -1,12 +1,15 @@
 ﻿using System;
+using TG.Auth.Api.Constants;
 
 namespace TG.Auth.Api.Entities
 {
-    public class GoogleAccount
+    public class ExternalAccount
     {
         public string Id { get; set; } = default!;
+        
+        public AuthType Type { get; set; }
 
-        public string Email { get; set; } = default!;
+        public string? Email { get; set; }
         
         public Guid TgUserId { get; set; }
         

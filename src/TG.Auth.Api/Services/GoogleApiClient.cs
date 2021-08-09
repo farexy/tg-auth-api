@@ -18,7 +18,7 @@ namespace TG.Auth.Api.Services
             _client.BaseAddress = BaseOAuthUri;
         }
 
-        public async Task<GoogleTokenPayload?> ValidateAndParseTokenAsync(string idToken, CancellationToken cancellationToken)
+        public async Task<GoogleTokenPayload?> GetUserTokenPayloadAsync(string idToken, CancellationToken cancellationToken)
         {
             var response = await _client.GetAsync("/tokeninfo?id_token=" + idToken, cancellationToken);
             return response.IsSuccessStatusCode 

@@ -16,14 +16,14 @@ namespace TG.Auth.Api.Application.Tokens
 {
     public record CreateTokensByGoogleAuthCommand(string IdToken) : IRequest<OperationResult<TokensResponse>>;
     
-    public class CreateTokenTestCommandHandler : IRequestHandler<CreateTokensByGoogleAuthCommand, OperationResult<TokensResponse>>
+    public class CreateTokensByGoogleAuthCommandHandler : IRequestHandler<CreateTokensByGoogleAuthCommand, OperationResult<TokensResponse>>
     {
         private readonly ApplicationDbContext _dbContext;
 
         private readonly IGoogleApiClient _googleApiClient;
         private readonly ITokenService _tokenService;
 
-        public CreateTokenTestCommandHandler(ApplicationDbContext dbContext, IGoogleApiClient googleApiClient,
+        public CreateTokensByGoogleAuthCommandHandler(ApplicationDbContext dbContext, IGoogleApiClient googleApiClient,
             ITokenService tokenService)
         {
             _dbContext = dbContext;
@@ -33,14 +33,14 @@ namespace TG.Auth.Api.Application.Tokens
 
         public async Task<OperationResult<TokensResponse>> Handle(CreateTokensByGoogleAuthCommand command, CancellationToken cancellationToken)
         {
-            var tokenPayload = await _googleApiClient.ValidateAndParseTokenAsync(command.IdToken, cancellationToken);
+            var tokenPayload = await _googleApiClient.GetUserTokenPayloadAsync(command.IdToken, cancellationToken);
             if (tokenPayload is null)
             {
                 return null!;
             }
-            var googleAccount = await _dbContext.GoogleAccounts
-                .Include(g => g.TgUser)
-                .FirstOrDefaultAsync(g => g.Id == tokenPayload.Subject, cancellationToken);
+            var googleAccount = await _dbContext.ExternalAccounts
+                .Include(a => a.TgUser)
+                .FirstOrDefaultAsync(a => a.Id == tokenPayload.Subject && a.Type == AuthType.Google, cancellationToken);
 
             googleAccount ??= await CreateUserAsync(tokenPayload, cancellationToken);
 
@@ -49,12 +49,11 @@ namespace TG.Auth.Api.Application.Tokens
             return tokens;
         }
         
-        private async Task<GoogleAccount> CreateUserAsync(GoogleTokenPayload payload, CancellationToken cancellationToken)
+        private async Task<ExternalAccount> CreateUserAsync(GoogleTokenPayload payload, CancellationToken cancellationToken)
         {
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                GoogleAccountId = payload.Subject,
                 Login = payload.Email,
                 Email = payload.Email,
                 FirstName = payload.GivenName,
@@ -62,9 +61,10 @@ namespace TG.Auth.Api.Application.Tokens
                 Roles = new [] {UserRoles.GoogleUser}
             };
 
-            var googleAccount = new GoogleAccount
+            var googleAccount = new ExternalAccount
             {
                 Id = payload.Subject,
+                Type = AuthType.Google,
                 Email = payload.Email,
                 TgUser = user,
             };

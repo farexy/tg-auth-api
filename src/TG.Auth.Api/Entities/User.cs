@@ -8,8 +8,6 @@ namespace TG.Auth.Api.Entities
         public Guid Id { get; set; }
 
         public string Login { get; set; } = default!;
-        
-        public string? GoogleAccountId { get; set; }
 
         public string Email { get; set; } = default!;
         

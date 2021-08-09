@@ -32,6 +32,15 @@ namespace TG.Auth.Api.Controllers
                 .Created();
         }
         
+        [HttpPost("facebook")]
+        public async Task<ActionResult<TokensResponse>> CreateByFacebookAuth([FromBody] TokenByFacebookAuthRequest request)
+        {
+            var cmd = new CreateTokensByFacebookAuthCommand(request.AccessToken);
+            var result = await _mediator.Send(cmd);
+            return result.ToActionResult()
+                .Created();
+        }
+        
         [HttpPut]
         public async Task<ActionResult<TokensResponse>> Refresh([FromBody] RefreshTokenRequest request)
         {

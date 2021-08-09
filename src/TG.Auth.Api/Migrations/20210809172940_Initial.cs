@@ -4,7 +4,7 @@ using TG.Core.App.Constants;
 
 namespace TG.Auth.Api.Migrations
 {
-    public partial class Init : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -14,7 +14,6 @@ namespace TG.Auth.Api.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     login = table.Column<string>(type: "text", nullable: false),
-                    google_account_id = table.Column<string>(type: "text", nullable: true),
                     email = table.Column<string>(type: "text", nullable: false),
                     first_name = table.Column<string>(type: "text", nullable: false),
                     last_name = table.Column<string>(type: "text", nullable: false),
@@ -26,18 +25,19 @@ namespace TG.Auth.Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "google_accounts",
+                name: "external_accounts",
                 columns: table => new
                 {
                     id = table.Column<string>(type: "text", nullable: false),
-                    email = table.Column<string>(type: "text", nullable: false),
+                    type = table.Column<int>(type: "integer", nullable: false),
+                    email = table.Column<string>(type: "text", nullable: true),
                     tg_user_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_google_accounts", x => x.id);
+                    table.PrimaryKey("pk_external_accounts", x => new { x.id, x.type });
                     table.ForeignKey(
-                        name: "fk_google_accounts_users_tg_user_id",
+                        name: "fk_external_accounts_users_tg_user_id",
                         column: x => x.tg_user_id,
                         principalTable: "users",
                         principalColumn: "id",
@@ -67,8 +67,8 @@ namespace TG.Auth.Api.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_google_accounts_tg_user_id",
-                table: "google_accounts",
+                name: "ix_external_accounts_tg_user_id",
+                table: "external_accounts",
                 column: "tg_user_id");
 
             migrationBuilder.CreateIndex(
@@ -80,7 +80,7 @@ namespace TG.Auth.Api.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "google_accounts");
+                name: "external_accounts");
 
             migrationBuilder.DropTable(
                 name: "tokens");
