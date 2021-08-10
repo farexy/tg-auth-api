@@ -41,6 +41,15 @@ namespace TG.Auth.Api.Controllers
                 .Created();
         }
         
+        [HttpPost("admin")]
+        public async Task<ActionResult<TokensResponse>> CreateByGoogleAdminAuth([FromBody] TokenByGoogleAuthRequest request)
+        {
+            var cmd = new CreateAdminTokensByGoogleAuthCommand(request.IdToken);
+            var result = await _mediator.Send(cmd);
+            return result.ToActionResult()
+                .Created();
+        }
+        
         [HttpPut]
         public async Task<ActionResult<TokensResponse>> Refresh([FromBody] RefreshTokenRequest request)
         {

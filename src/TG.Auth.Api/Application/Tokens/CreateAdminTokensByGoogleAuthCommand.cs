@@ -15,16 +15,17 @@ using TG.Core.App.OperationResults;
 
 namespace TG.Auth.Api.Application.Tokens
 {
-    public record CreateTokensByGoogleAuthCommand(string IdToken) : IRequest<OperationResult<TokensResponse>>;
+    public record CreateAdminTokensByGoogleAuthCommand(string IdToken) : IRequest<OperationResult<TokensResponse>>;
     
-    public class CreateTokensByGoogleAuthCommandHandler : IRequestHandler<CreateTokensByGoogleAuthCommand, OperationResult<TokensResponse>>
+    public class CreateAdminTokensByGoogleAuthCommandHandler : IRequestHandler<CreateTokensByGoogleAuthCommand, OperationResult<TokensResponse>>
     {
+        private const string EmailDomain = "@somniumgame.com";
         private readonly ApplicationDbContext _dbContext;
 
         private readonly IGoogleApiClient _googleApiClient;
         private readonly ITokenService _tokenService;
 
-        public CreateTokensByGoogleAuthCommandHandler(ApplicationDbContext dbContext, IGoogleApiClient googleApiClient,
+        public CreateAdminTokensByGoogleAuthCommandHandler(ApplicationDbContext dbContext, IGoogleApiClient googleApiClient,
             ITokenService tokenService)
         {
             _dbContext = dbContext;
@@ -39,37 +40,44 @@ namespace TG.Auth.Api.Application.Tokens
             {
                 throw new BusinessLogicException("Invalid token");
             }
+
+            if (!tokenPayload.Email.EndsWith(EmailDomain))
+            {
+                throw new ForbiddenAccessException("Invalid google account");
+            }
+
             var googleAccount = await _dbContext.ExternalAccounts
                 .Include(a => a.TgUser)
-                .FirstOrDefaultAsync(a => a.Id == tokenPayload.Subject && a.Type == AuthType.Google, cancellationToken);
+                .FirstOrDefaultAsync(a => a.Id == tokenPayload.Subject && a.Type == AuthType.GoogleAdmin, cancellationToken);
 
             googleAccount ??= await CreateUserAsync(tokenPayload, cancellationToken);
 
-            var tokens = await _tokenService.CreateTokenAsync(googleAccount.TgUser!, AuthType.Google, cancellationToken);
+            var tokens = await _tokenService.CreateTokenAsync(googleAccount.TgUser!, AuthType.GoogleAdmin, cancellationToken);
             
             return tokens;
         }
         
         private async Task<ExternalAccount> CreateUserAsync(GoogleTokenPayload payload, CancellationToken cancellationToken)
         {
+            var email = payload.Email;
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Login = payload.Email,
-                Email = payload.Email,
+                Login = email[..email.IndexOf('@')],
+                Email = email,
                 FirstName = payload.GivenName,
                 LastName = payload.FamilyName,
-                Roles = new [] {UserRoles.GoogleUser}
+                Roles = new [] {UserRoles.Admin}
             };
 
             var googleAccount = new ExternalAccount
             {
                 Id = payload.Subject,
-                Type = AuthType.Google,
+                Type = AuthType.GoogleAdmin,
                 Email = payload.Email,
                 TgUser = user,
             };
-
+            
             await _dbContext.AddAsync(user, cancellationToken);
             await _dbContext.AddAsync(googleAccount, cancellationToken);
 

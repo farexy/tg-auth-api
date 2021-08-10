@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using TG.Auth.Api.Services.Dto;
+using TG.Core.App.Exceptions;
 
 namespace TG.Auth.Api.Services
 {
@@ -23,7 +24,7 @@ namespace TG.Auth.Api.Services
             var response = await _client.GetAsync("/tokeninfo?id_token=" + idToken, cancellationToken);
             return response.IsSuccessStatusCode 
                 ? await JsonSerializer.DeserializeAsync<GoogleTokenPayload>(await response.Content.ReadAsStreamAsync(cancellationToken), cancellationToken: cancellationToken)
-                : null;
+                : throw new BusinessLogicException("Invalid token");
         }
     }
 }

@@ -4,5 +4,6 @@
     {
         Google = 1,
         Facebook = 2,
+        GoogleAdmin = 10,
     }
 }

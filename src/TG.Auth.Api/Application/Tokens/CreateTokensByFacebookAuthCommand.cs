@@ -10,6 +10,7 @@ using TG.Auth.Api.Models.Response;
 using TG.Auth.Api.Services;
 using TG.Auth.Api.Services.Dto;
 using TG.Core.App.Constants;
+using TG.Core.App.Exceptions;
 using TG.Core.App.OperationResults;
 
 namespace TG.Auth.Api.Application.Tokens
@@ -36,7 +37,7 @@ private readonly ApplicationDbContext _dbContext;
             var tokenPayload = await _fbApiClient.GetUserTokenPayloadAsync(command.AccessToken, cancellationToken);
             if (tokenPayload is null)
             {
-                return null!;
+                throw new BusinessLogicException("Invalid token");
             }
             
             var fbAccount = await _dbContext.ExternalAccounts

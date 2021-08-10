@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using TG.Auth.Api.Config.Options;
 using TG.Auth.Api.Services.Dto;
+using TG.Core.App.Exceptions;
 
 namespace TG.Auth.Api.Services
 {
@@ -28,7 +29,7 @@ namespace TG.Auth.Api.Services
             var response = await _client.GetAsync(url, cancellationToken);
             return response.IsSuccessStatusCode 
                 ? await JsonSerializer.DeserializeAsync<FbTokenPayload>(await response.Content.ReadAsStreamAsync(cancellationToken), cancellationToken: cancellationToken)
-                : null;
+                : throw new BusinessLogicException("Invalid token");
         }
 
         private async Task<string> GetAppAccessToken(CancellationToken cancellationToken)
