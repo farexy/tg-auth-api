@@ -35,7 +35,7 @@ namespace TG.Auth.Api
                 .AddInvalidModelStateHandling(); 
             services.AddHealthChecks();
                 //.AddNpgSqlHealthCheck();
-            services.AddKubernetesTgApplicationInsights(Configuration);
+            //services.AddKubernetesTgApplicationInsights(Configuration);
             services.AddApiVersioning();
 
             services.AddPostgresDb<ApplicationDbContext>(Configuration);

@@ -15,7 +15,7 @@ namespace TG.Auth.Api
         private static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureTgKeyVault()
-                .ConfigureTgLogging(ServiceConst.ServiceName)
+                //.ConfigureTgLogging(ServiceConst.ServiceName)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder
