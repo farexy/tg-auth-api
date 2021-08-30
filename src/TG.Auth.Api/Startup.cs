@@ -38,7 +38,7 @@ namespace TG.Auth.Api
             //services.AddKubernetesTgApplicationInsights(Configuration);
             services.AddApiVersioning();
 
-            services.AddPostgresDb<ApplicationDbContext>(Configuration);
+            services.AddPostgresDb<ApplicationDbContext>(Configuration, ServiceConst.ServiceName);
 
             services.AddCors(cors => cors.AddDefaultPolicy(p =>
             {
