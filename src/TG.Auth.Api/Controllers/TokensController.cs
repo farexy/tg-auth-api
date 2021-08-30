@@ -50,7 +50,16 @@ namespace TG.Auth.Api.Controllers
                 .Created();
         }
         
-        [HttpPut]
+        [HttpPost("apple")]
+        public async Task<ActionResult<TokensResponse>> CreateByAppleAuth([FromBody] TokenByAppleAuthRequest request)
+        {
+            var cmd = new CreateTokensByAppleAuthCommand(request.Token);
+            var result = await _mediator.Send(cmd);
+            return result.ToActionResult()
+                .Created();
+        }
+        
+        [HttpPut("refresh")]
         public async Task<ActionResult<TokensResponse>> Refresh([FromBody] RefreshTokenRequest request)
         {
             var cmd = new RefreshTokenCommand(request.RefreshToken);
