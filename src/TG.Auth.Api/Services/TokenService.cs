@@ -23,12 +23,18 @@ namespace TG.Auth.Api.Services
     public class TokenService : ITokenService
     {
         private const int RefreshSecretLength = 32;
+        private static readonly JwtSecurityTokenHandler TokenHandler;
         private readonly ICryptoResistantStringGenerator _cryptoResistantStringGenerator;
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly IOptionsSnapshot<AuthJwtTokenOptions> _jwtTokenSettings;
         private readonly ApplicationDbContext _dbContext;
         private readonly IRsaParser _rsaParser;
 
+        static TokenService()
+        {
+            TokenHandler = new JwtSecurityTokenHandler {MapInboundClaims = false};
+        }
+        
         public TokenService(ICryptoResistantStringGenerator cryptoResistantStringGenerator, IDateTimeProvider dateTimeProvider,
             IOptionsSnapshot<AuthJwtTokenOptions> jwtTokenSettings, ApplicationDbContext dbContext, IRsaParser rsaParser)
         {
@@ -64,11 +70,9 @@ namespace TG.Auth.Api.Services
 
         public async Task<OperationResult<TokensResponse>> ValidateAndRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-
             try
             {
-                var payload = tokenHandler.ValidateToken(refreshToken, ValidationParameters, out _);
+                var payload = TokenHandler.ValidateToken(refreshToken, ValidationParameters, out _);
                 var tokenId = Guid.Parse(payload.FindFirstValue(JwtRegisteredClaimNames.Jti));
                 var refreshSecret = payload.FindFirstValue(JwtRegisteredClaimNames.Acr);
 
