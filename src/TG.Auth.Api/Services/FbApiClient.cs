@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +13,7 @@ namespace TG.Auth.Api.Services
     {
         private static string? _appAccessToken;
         private const string BaseOAuthUri = "https://graph.facebook.com";
+        private const string ApiVersion = "v12.0";
         private readonly HttpClient _client;
         private readonly FacebookOptions _facebookOptions;
 
@@ -30,6 +30,15 @@ namespace TG.Auth.Api.Services
             return response.IsSuccessStatusCode 
                 ? await JsonSerializer.DeserializeAsync<FbTokenPayload>(await response.Content.ReadAsStreamAsync(cancellationToken), cancellationToken: cancellationToken)
                 : throw new BusinessLogicException("Invalid token");
+        }
+        
+        public async Task<FbUserData> GetUserDataAsync(string id, string accessToken, CancellationToken cancellationToken)
+        {
+            var url = BaseOAuthUri + $"/{ApiVersion}/{id}?fields=id,first_name,last_name,email&access_token={accessToken}";
+            var response = await _client.GetAsync(url, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return (await JsonSerializer.DeserializeAsync<FbUserData>(
+                await response.Content.ReadAsStreamAsync(cancellationToken), cancellationToken: cancellationToken))!;
         }
 
         private async Task<string> GetAppAccessToken(CancellationToken cancellationToken)

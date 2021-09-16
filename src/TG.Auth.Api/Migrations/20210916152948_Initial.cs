@@ -14,9 +14,9 @@ namespace TG.Auth.Api.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     login = table.Column<string>(type: "text", nullable: false),
-                    email = table.Column<string>(type: "text", nullable: false),
-                    first_name = table.Column<string>(type: "text", nullable: false),
-                    last_name = table.Column<string>(type: "text", nullable: false),
+                    email = table.Column<string>(type: "text", nullable: true),
+                    first_name = table.Column<string>(type: "text", nullable: true),
+                    last_name = table.Column<string>(type: "text", nullable: true),
                     roles = table.Column<UserRoles[]>(type: "jsonb", nullable: false)
                 },
                 constraints: table =>
@@ -75,6 +75,11 @@ namespace TG.Auth.Api.Migrations
                 name: "ix_tokens_user_id",
                 table: "tokens",
                 column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_users_login",
+                table: "users",
+                column: "login");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

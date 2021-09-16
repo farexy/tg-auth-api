@@ -24,13 +24,15 @@ namespace TG.Auth.Api.Application.Tokens
 
         private readonly IGoogleApiClient _googleApiClient;
         private readonly ITokenService _tokenService;
+        private readonly ILoginGenerator _loginGenerator;
 
         public CreateAdminTokensByGoogleAuthCommandHandler(ApplicationDbContext dbContext, IGoogleApiClient googleApiClient,
-            ITokenService tokenService)
+            ITokenService tokenService, ILoginGenerator loginGenerator)
         {
             _dbContext = dbContext;
             _googleApiClient = googleApiClient;
             _tokenService = tokenService;
+            _loginGenerator = loginGenerator;
         }
 
         public async Task<OperationResult<TokensResponse>> Handle(CreateAdminTokensByGoogleAuthCommand command, CancellationToken cancellationToken)
@@ -63,7 +65,7 @@ namespace TG.Auth.Api.Application.Tokens
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Login = email[..email.IndexOf('@')],
+                Login = await _loginGenerator.GenerateLoginAsync(email),
                 Email = email,
                 FirstName = payload.GivenName,
                 LastName = payload.FamilyName,

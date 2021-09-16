@@ -114,7 +114,7 @@ namespace TG.Auth.Api.Services
                 [JwtRegisteredClaimNames.Aud] = settings.Audience,
                 [JwtRegisteredClaimNames.Exp] = _dateTimeProvider.UtcNow.AddSeconds(settings.AccessExpirationTimeSec).ToUnixTime(),
                 [JwtRegisteredClaimNames.Sub] = user.Id.ToString(),
-                [JwtRegisteredClaimNames.Email] = user.Email,
+                [JwtRegisteredClaimNames.UniqueName] = user.Login,
                 [JwtRegisteredClaimNames.Amr] = authType.ToString(),
                 [TgClaimNames.Roles] = user.Roles.Select(r => r.ToString()),
             };

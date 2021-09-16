@@ -11,6 +11,7 @@ namespace TG.Auth.Api.Db.EfConfiguration
         public void Configure(EntityTypeBuilder<User> entity)
         {
             entity.HasKey(u => u.Id);
+            entity.HasIndex(u => u.Login);
             entity.Property(u => u.Roles)
                 .HasColumnType(JsonType);
         }

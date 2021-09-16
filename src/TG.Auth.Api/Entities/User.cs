@@ -9,11 +9,10 @@ namespace TG.Auth.Api.Entities
 
         public string Login { get; set; } = default!;
 
-        public string Email { get; set; } = default!;
-        
-        public string FirstName { get; set; } = default!;
-        
-        public string LastName { get; set; } = default!;
+        public string? Email { get; set; }
+
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
 
         public UserRoles[] Roles { get; set; } = default!;
     }

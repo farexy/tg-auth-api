@@ -23,13 +23,15 @@ private readonly ApplicationDbContext _dbContext;
 
         private readonly IFbApiClient _fbApiClient;
         private readonly ITokenService _tokenService;
+        private readonly ILoginGenerator _loginGenerator;
 
         public CreateTokensByFacebookAuthCommandHandler(ApplicationDbContext dbContext,
-            ITokenService tokenService, IFbApiClient fbApiClient)
+            ITokenService tokenService, IFbApiClient fbApiClient, ILoginGenerator loginGenerator)
         {
             _dbContext = dbContext;
             _tokenService = tokenService;
             _fbApiClient = fbApiClient;
+            _loginGenerator = loginGenerator;
         }
 
         public async Task<OperationResult<TokensResponse>> Handle(CreateTokensByFacebookAuthCommand command, CancellationToken cancellationToken)
@@ -44,22 +46,25 @@ private readonly ApplicationDbContext _dbContext;
                 .Include(a => a.TgUser)
                 .FirstOrDefaultAsync(a => a.Id == tokenPayload.Data.UserId && a.Type == AuthType.Facebook, cancellationToken);
 
-            fbAccount ??= await CreateUserAsync(tokenPayload.Data, cancellationToken);
+            fbAccount ??= await CreateUserAsync(tokenPayload.Data, command.AccessToken, cancellationToken);
 
             var tokens = await _tokenService.CreateTokenAsync(fbAccount.TgUser!, AuthType.Facebook, cancellationToken);
             
             return tokens;
         }
         
-        private async Task<ExternalAccount> CreateUserAsync(FbTokenData data, CancellationToken cancellationToken)
+        private async Task<ExternalAccount> CreateUserAsync(FbTokenData data, string accessToken, CancellationToken cancellationToken)
         {
+            var fbUser = await _fbApiClient.GetUserDataAsync(data.UserId, accessToken, cancellationToken);
+            var email = UnescapeEmailUnicode(fbUser.Email);
+            var login = await _loginGenerator.GenerateLoginAsync(email);
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                Login = data.UserId,
-                Email = "test@somniumgame.com",
-                FirstName = "Test",
-                LastName = "Test",
+                Login = login,
+                Email = email,
+                FirstName = fbUser.FirstName,
+                LastName = fbUser.LastName,
                 Roles = new [] {UserRoles.FbUser}
             };
 
@@ -68,6 +73,7 @@ private readonly ApplicationDbContext _dbContext;
                 Id = data.UserId,
                 Type = AuthType.Facebook,
                 TgUser = user,
+                Email = email
             };
 
             await _dbContext.AddAsync(user, cancellationToken);
@@ -76,6 +82,12 @@ private readonly ApplicationDbContext _dbContext;
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             return fbAccount;
+        }
+
+        private static string? UnescapeEmailUnicode(string? email)
+        {
+            const string atUnicode = "\\u0040";
+            return email?.Replace(atUnicode, "@");
         }
     }
 }

@@ -55,6 +55,7 @@ namespace TG.Auth.Api
                 
             services.AddTgServices();
             services.AddTransient<ICryptoResistantStringGenerator, CryptoResistantStringGenerator>();
+            services.AddScoped<ILoginGenerator, LoginGenerator>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddHttpClient<IGoogleApiClient, GoogleApiClient>();
             services.AddHttpClient<IFbApiClient, FbApiClient>();
