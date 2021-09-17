@@ -7,13 +7,15 @@ using Microsoft.Extensions.Hosting;
 using TG.Auth.Api.Config;
 using TG.Auth.Api.Config.Options;
 using TG.Auth.Api.Db;
+using TG.Auth.Api.Extensions;
 using TG.Auth.Api.Services;
 using TG.Core.App.Configuration;
 using TG.Core.App.Configuration.Auth;
-using TG.Core.App.Configuration.Monitoring;
 using TG.Core.App.Middlewares;
 using TG.Core.App.Swagger;
 using TG.Core.Db.Postgres;
+using TG.Core.ServiceBus.Extensions;
+using TG.Core.ServiceBus.Messages;
 
 namespace TG.Auth.Api
 {
@@ -53,6 +55,7 @@ namespace TG.Auth.Api
             services.Configure<AuthJwtTokenOptions>(Configuration.GetSection(nameof(JwtTokenOptions)));
             services.Configure<FacebookOptions>(Configuration.GetSection(nameof(FacebookOptions)));
                 
+            services.AddAutoMapper<Startup>();
             services.AddTgServices();
             services.AddTransient<ICryptoResistantStringGenerator, CryptoResistantStringGenerator>();
             services.AddScoped<ILoginGenerator, LoginGenerator>();
@@ -66,6 +69,11 @@ namespace TG.Auth.Api
                 opt.ProjectName = ServiceConst.ProjectName;
                 opt.AppVersion = "1";
             });
+
+            services.AddServiceBus(ServiceConst.ServiceName)
+                .Configure(Configuration)
+                .ConfigureSbTracing()
+                .AddQueueProducer<NewUserAuthorizationMessage>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

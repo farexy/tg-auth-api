@@ -1,8 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using TG.Auth.Api.Constants;
 using TG.Auth.Api.Db;
 using TG.Auth.Api.Entities;
@@ -12,38 +12,38 @@ using TG.Auth.Api.Services.Dto;
 using TG.Core.App.Constants;
 using TG.Core.App.Exceptions;
 using TG.Core.App.OperationResults;
+using TG.Core.ServiceBus;
+using TG.Core.ServiceBus.Messages;
 
 namespace TG.Auth.Api.Application.Tokens
 {
     public record CreateTokensByGoogleAuthCommand(string IdToken) : IRequest<OperationResult<TokensResponse>>;
     
-    public class CreateTokensByGoogleAuthCommandHandler : IRequestHandler<CreateTokensByGoogleAuthCommand, OperationResult<TokensResponse>>
+    public class CreateTokensByGoogleAuthCommandHandler : BaseCreateAuthTokensCommandHandler<CreateTokensByGoogleAuthCommand>
     {
-        private readonly ApplicationDbContext _dbContext;
-
         private readonly IGoogleApiClient _googleApiClient;
         private readonly ITokenService _tokenService;
         private readonly ILoginGenerator _loginGenerator;
 
         public CreateTokensByGoogleAuthCommandHandler(ApplicationDbContext dbContext, IGoogleApiClient googleApiClient,
-            ITokenService tokenService, ILoginGenerator loginGenerator)
+            ITokenService tokenService, ILoginGenerator loginGenerator, IQueueProducer<NewUserAuthorizationMessage> queueProducer,
+            IMapper mapper)
+            : base(dbContext, queueProducer, mapper)
         {
-            _dbContext = dbContext;
             _googleApiClient = googleApiClient;
             _tokenService = tokenService;
             _loginGenerator = loginGenerator;
         }
 
-        public async Task<OperationResult<TokensResponse>> Handle(CreateTokensByGoogleAuthCommand command, CancellationToken cancellationToken)
+        public override async Task<OperationResult<TokensResponse>> Handle(CreateTokensByGoogleAuthCommand command, CancellationToken cancellationToken)
         {
             var tokenPayload = await _googleApiClient.GetUserTokenPayloadAsync(command.IdToken, cancellationToken);
             if (tokenPayload is null)
             {
                 throw new BusinessLogicException("Invalid token");
             }
-            var googleAccount = await _dbContext.ExternalAccounts
-                .Include(a => a.TgUser)
-                .FirstOrDefaultAsync(a => a.Id == tokenPayload.Subject && a.Type == AuthType.Google, cancellationToken);
+
+            var googleAccount = await GetAccountAsync(tokenPayload.Subject, AuthType.Google, cancellationToken);
 
             googleAccount ??= await CreateUserAsync(tokenPayload, cancellationToken);
 
@@ -73,11 +73,7 @@ namespace TG.Auth.Api.Application.Tokens
                 TgUser = user,
             };
 
-            await _dbContext.AddAsync(user, cancellationToken);
-            await _dbContext.AddAsync(googleAccount, cancellationToken);
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
+            await AddUserAsync(googleAccount, cancellationToken);
             return googleAccount;
         }
     }

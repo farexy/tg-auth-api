@@ -12,6 +12,7 @@ namespace TG.Auth.Api.Entities
         public string? Email { get; set; }
 
         public string? FirstName { get; set; }
+        
         public string? LastName { get; set; }
 
         public UserRoles[] Roles { get; set; } = default!;
