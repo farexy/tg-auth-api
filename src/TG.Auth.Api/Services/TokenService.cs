@@ -116,9 +116,13 @@ namespace TG.Auth.Api.Services
                 [JwtRegisteredClaimNames.Sub] = user.Id.ToString(),
                 [JwtRegisteredClaimNames.UniqueName] = user.Login,
                 [JwtRegisteredClaimNames.Amr] = authType.ToString(),
-                [JwtRegisteredClaimNames.Email] = authType is AuthType.GoogleAdmin ? user.Email : null,
                 [TgClaimNames.Roles] = user.Roles.Select(r => r.ToString()),
             };
+
+            if (authType is AuthType.GoogleAdmin)
+            {
+                accessTokenPayload.AddClaim(new Claim(JwtRegisteredClaimNames.Email, user.Email!));
+            }
 
             var rsaPrivateKey = _rsaParser.ParseRsaPrivateKey(settings.PrivateKey);
             var credentials = new SigningCredentials(rsaPrivateKey, SecurityAlgorithms.RsaSha512);
