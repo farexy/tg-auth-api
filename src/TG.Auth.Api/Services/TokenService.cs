@@ -116,6 +116,7 @@ namespace TG.Auth.Api.Services
                 [JwtRegisteredClaimNames.Sub] = user.Id.ToString(),
                 [JwtRegisteredClaimNames.UniqueName] = user.Login,
                 [JwtRegisteredClaimNames.Amr] = authType.ToString(),
+                [JwtRegisteredClaimNames.Email] = authType is AuthType.GoogleAdmin ? user.Email : null,
                 [TgClaimNames.Roles] = user.Roles.Select(r => r.ToString()),
             };
 
