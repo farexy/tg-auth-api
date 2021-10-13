@@ -1,7 +1,7 @@
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: ##SERVICE_NAME##-service-route
+  name: ##SERVICE_NAME##-svc-route
   namespace: ##SERVICE_NAMESPACE##
   labels: 
     app: ##SERVICE_NAME##
@@ -13,7 +13,7 @@ spec:
   - match: Host(`##ENVIRONMENT##-tg-api.somniumgame.com`) && PathPrefix(`/##SERVICE_ROUTE_PREFIX##`)
     kind: Rule
     services:
-    - name: ##SERVICE_NAME##-service
+    - name: ##SERVICE_NAME##-svc
       namespace: ##SERVICE_NAMESPACE##
       port: 80
   tls:
