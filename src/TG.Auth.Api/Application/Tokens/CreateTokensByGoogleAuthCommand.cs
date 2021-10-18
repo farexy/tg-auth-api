@@ -43,11 +43,11 @@ namespace TG.Auth.Api.Application.Tokens
                 throw new BusinessLogicException("Invalid token");
             }
 
-            var googleAccount = await GetAccountAsync(tokenPayload.Subject, AuthType.Google, cancellationToken);
+            var googleAccount = await GetAccountAsync(tokenPayload.Subject, AuthType.GoogleUser, cancellationToken);
 
             googleAccount ??= await CreateUserAsync(tokenPayload, cancellationToken);
 
-            var tokens = await _tokenService.CreateTokenAsync(googleAccount.TgUser!, AuthType.Google, cancellationToken);
+            var tokens = await _tokenService.CreateTokenAsync(googleAccount.TgUser!, AuthType.GoogleUser, cancellationToken);
             
             return tokens;
         }
@@ -68,7 +68,7 @@ namespace TG.Auth.Api.Application.Tokens
             var googleAccount = new ExternalAccount
             {
                 Id = payload.Subject,
-                Type = AuthType.Google,
+                Type = AuthType.GoogleUser,
                 Email = payload.Email,
                 TgUser = user,
             };

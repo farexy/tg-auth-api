@@ -46,7 +46,7 @@ namespace TG.Auth.Api.Application.Tokens
 
             googleAccount ??= await CreateUserAsync(tokenPayload, cancellationToken);
 
-            var tokens = await _tokenService.CreateTokenAsync(googleAccount.TgUser!, AuthType.Google, cancellationToken);
+            var tokens = await _tokenService.CreateTokenAsync(googleAccount.TgUser!, AuthType.Apple, cancellationToken);
             
             return tokens;
         }
