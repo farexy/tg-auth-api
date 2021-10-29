@@ -17,7 +17,7 @@ using TG.Core.ServiceBus.Messages;
 
 namespace TG.Auth.Api.Application.Tokens
 {
-    public record CreateAdminTokensByGoogleAuthCommand(string IdToken) : IRequest<OperationResult<TokensResponse>>;
+    public record CreateAdminTokensByGoogleAuthCommand(string DeviceId, string IdToken) : IRequest<OperationResult<TokensResponse>>;
     
     public class CreateAdminTokensByGoogleAuthCommandHandler : BaseCreateAuthTokensCommandHandler<CreateAdminTokensByGoogleAuthCommand>
     {
@@ -54,7 +54,7 @@ namespace TG.Auth.Api.Application.Tokens
 
             googleAccount ??= await CreateUserAsync(tokenPayload, cancellationToken);
 
-            var tokens = await _tokenService.CreateTokenAsync(googleAccount.TgUser!, AuthType.GoogleAdmin, cancellationToken);
+            var tokens = await _tokenService.CreateTokenAsync(googleAccount.TgUser!, command.DeviceId, AuthType.GoogleAdmin, cancellationToken);
             
             return tokens;
         }

@@ -8,7 +8,9 @@ namespace TG.Auth.Api.Entities
         public Guid Id { get; set; }
         
         public Guid UserId { get; set; }
-        
+
+        public string DeviceId { get; set; } = default!;
+
         public AuthType AuthType { get; set; }
         
         public DateTime IssuedTime { get; set; }

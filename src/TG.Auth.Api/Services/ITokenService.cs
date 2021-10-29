@@ -9,7 +9,8 @@ namespace TG.Auth.Api.Services
 {
     public interface ITokenService
     {
-        Task<TokensResponse> CreateTokenAsync(User user, AuthType authType, CancellationToken cancellationToken);
+        Task<TokensResponse> CreateTokenAsync(User user, string deviceId, AuthType authType,
+            CancellationToken cancellationToken);
         Task<OperationResult<TokensResponse>> ValidateAndRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken);
     }
 }

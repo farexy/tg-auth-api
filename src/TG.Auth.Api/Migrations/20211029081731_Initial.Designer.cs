@@ -11,7 +11,7 @@ using TG.Core.App.Constants;
 namespace TG.Auth.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20210916152948_Initial")]
+    [Migration("20211029081731_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -19,7 +19,7 @@ namespace TG.Auth.Api.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
-                .HasAnnotation("ProductVersion", "5.0.9")
+                .HasAnnotation("ProductVersion", "5.0.10")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
             modelBuilder.Entity("TG.Auth.Api.Entities.ExternalAccount", b =>
@@ -59,6 +59,11 @@ namespace TG.Auth.Api.Migrations
                     b.Property<int>("AuthType")
                         .HasColumnType("integer")
                         .HasColumnName("auth_type");
+
+                    b.Property<string>("DeviceId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("device_id");
 
                     b.Property<DateTime>("ExpirationTime")
                         .HasColumnType("timestamp without time zone")
