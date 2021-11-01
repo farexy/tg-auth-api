@@ -17,7 +17,7 @@ using TG.Core.ServiceBus.Messages;
 
 namespace TG.Auth.Api.Application.Tokens
 {
-    public record CreateTokensByFacebookAuthCommand(string AccessToken) : IRequest<OperationResult<TokensResponse>>;
+    public record CreateTokensByFacebookAuthCommand(string DeviceId, string AccessToken) : IRequest<OperationResult<TokensResponse>>;
     
     public class CreateTokensByFacebookAuthCommandHandler : BaseCreateAuthTokensCommandHandler<CreateTokensByFacebookAuthCommand>
     {
@@ -47,7 +47,7 @@ namespace TG.Auth.Api.Application.Tokens
 
             fbAccount ??= await CreateUserAsync(tokenPayload.Data, command.AccessToken, cancellationToken);
 
-            var tokens = await _tokenService.CreateTokenAsync(fbAccount.TgUser!, AuthType.Facebook, cancellationToken);
+            var tokens = await _tokenService.CreateTokenAsync(fbAccount.TgUser!, command.DeviceId, AuthType.Facebook, cancellationToken);
             
             return tokens;
         }

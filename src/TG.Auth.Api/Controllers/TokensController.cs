@@ -26,7 +26,7 @@ namespace TG.Auth.Api.Controllers
         [HttpPost("google")]
         public async Task<ActionResult<TokensResponse>> CreateByGoogleAuth([FromBody] TokenByGoogleAuthRequest request)
         {
-            var cmd = new CreateTokensByGoogleAuthCommand(request.IdToken);
+            var cmd = new CreateTokensByGoogleAuthCommand(request.DeviceId, request.IdToken);
             var result = await _mediator.Send(cmd);
             return result.ToActionResult()
                 .Created();
@@ -35,7 +35,7 @@ namespace TG.Auth.Api.Controllers
         [HttpPost("facebook")]
         public async Task<ActionResult<TokensResponse>> CreateByFacebookAuth([FromBody] TokenByFacebookAuthRequest request)
         {
-            var cmd = new CreateTokensByFacebookAuthCommand(request.AccessToken);
+            var cmd = new CreateTokensByFacebookAuthCommand(request.DeviceId, request.AccessToken);
             var result = await _mediator.Send(cmd);
             return result.ToActionResult()
                 .Created();
@@ -44,7 +44,7 @@ namespace TG.Auth.Api.Controllers
         [HttpPost("admin")]
         public async Task<ActionResult<TokensResponse>> CreateByGoogleAdminAuth([FromBody] TokenByGoogleAuthRequest request)
         {
-            var cmd = new CreateAdminTokensByGoogleAuthCommand(request.IdToken);
+            var cmd = new CreateAdminTokensByGoogleAuthCommand(request.DeviceId, request.IdToken);
             var result = await _mediator.Send(cmd);
             return result.ToActionResult()
                 .Created();
@@ -53,7 +53,7 @@ namespace TG.Auth.Api.Controllers
         [HttpPost("apple")]
         public async Task<ActionResult<TokensResponse>> CreateByAppleAuth([FromBody] TokenByAppleAuthRequest request)
         {
-            var cmd = new CreateTokensByAppleAuthCommand(request.Token);
+            var cmd = new CreateTokensByAppleAuthCommand(request.DeviceId, request.Token);
             var result = await _mediator.Send(cmd);
             return result.ToActionResult()
                 .Created();

@@ -50,6 +50,7 @@ namespace TG.Auth.Api.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    device_id = table.Column<string>(type: "text", nullable: false),
                     auth_type = table.Column<int>(type: "integer", nullable: false),
                     issued_time = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     expiration_time = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),

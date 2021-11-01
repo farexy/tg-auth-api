@@ -45,24 +45,30 @@ namespace TG.Auth.Api.Services
             _rsaParser = rsaParser;
         }
         
-        public async Task<TokensResponse> CreateTokenAsync(User user, AuthType authType, CancellationToken cancellationToken)
+        public async Task<TokensResponse> CreateTokenAsync(User user, string deviceId, AuthType authType, CancellationToken cancellationToken)
         {
-            var tokenId = Guid.NewGuid();
+            var token = await _dbContext.Tokens
+                .FirstOrDefaultAsync(t => t.UserId == user.Id && t.DeviceId == deviceId, cancellationToken);
 
-            var token = new Token
+            if (token is null)
             {
-                Id = tokenId,
-                UserId = user.Id,
-                ExpirationTime = RefreshTokenExpirationTime,
-                AuthType = authType,
-                IssuedTime = _dateTimeProvider.UtcNow,
-                RefreshSecret = _cryptoResistantStringGenerator.Generate(RefreshSecretLength),
-            };
+                token = new Token
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = user.Id,
+                    DeviceId = deviceId,
+                };
+                await _dbContext.AddAsync(token, cancellationToken);
+            }
             
-            var accessToken = GenerateAccessToken(user, authType);
+            token.ExpirationTime = RefreshTokenExpirationTime;
+            token.AuthType = authType;
+            token.IssuedTime = _dateTimeProvider.UtcNow;
+            token.RefreshSecret = _cryptoResistantStringGenerator.Generate(RefreshSecretLength);
+            
+            var accessToken = GenerateAccessToken(user, deviceId, authType);
             var refreshToken = GenerateRefreshToken(token);
 
-            await _dbContext.AddAsync(token, cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             return new TokensResponse(accessToken, refreshToken);
@@ -88,7 +94,7 @@ namespace TG.Auth.Api.Services
                 token.IssuedTime = _dateTimeProvider.UtcNow;
                 token.RefreshSecret = _cryptoResistantStringGenerator.Generate(RefreshSecretLength);
                 
-                var accessToken = GenerateAccessToken(token.User!, token.AuthType);
+                var accessToken = GenerateAccessToken(token.User!, token.DeviceId, token.AuthType);
                 var newRefreshToken = GenerateRefreshToken(token);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
@@ -105,7 +111,7 @@ namespace TG.Auth.Api.Services
             }
         }
 
-        private string GenerateAccessToken(User user, AuthType authType)
+        private string GenerateAccessToken(User user, string deviceId, AuthType authType)
         {
             var settings = _jwtTokenSettings.Value;
             var accessTokenPayload = new JwtPayload
@@ -115,6 +121,7 @@ namespace TG.Auth.Api.Services
                 [JwtRegisteredClaimNames.Exp] = _dateTimeProvider.UtcNow.AddSeconds(settings.AccessExpirationTimeSec).ToUnixTime(),
                 [JwtRegisteredClaimNames.Sub] = user.Id.ToString(),
                 [JwtRegisteredClaimNames.UniqueName] = user.Login,
+                [JwtRegisteredClaimNames.Sid] = deviceId,
                 [JwtRegisteredClaimNames.Amr] = authType.ToString(),
                 [TgClaimNames.Roles] = user.Roles.Select(r => r.ToString()),
             };
