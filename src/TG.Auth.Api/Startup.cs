@@ -69,8 +69,7 @@ namespace TG.Auth.Api
                 opt.AppVersion = "1";
             });
 
-            services.AddServiceBus(ServiceConst.ServiceName)
-                .Configure(Configuration)
+            services.AddServiceBus(Configuration)
                 .ConfigureSbTracing()
                 .AddQueueProducer<NewUserAuthorizationMessage>();
         }
