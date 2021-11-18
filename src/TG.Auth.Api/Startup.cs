@@ -71,7 +71,8 @@ namespace TG.Auth.Api
 
             services.AddServiceBus(Configuration)
                 .ConfigureSbTracing()
-                .AddQueueProducer<NewUserAuthorizationMessage>();
+                .AddQueueProducer<NewUserAuthorizationMessage>()
+                .AddTopicProducer<UserDeletedMessage>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
