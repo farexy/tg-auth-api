@@ -16,5 +16,7 @@ namespace TG.Auth.Api.Entities
         public string? LastName { get; set; }
 
         public UserRoles[] Roles { get; set; } = default!;
+        
+        public Guid? BanId { get; set; }
     }
 }

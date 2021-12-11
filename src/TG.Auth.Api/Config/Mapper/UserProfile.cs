@@ -9,7 +9,8 @@ namespace TG.Auth.Api.Config.Mapper
         public UserProfile()
         {
             CreateMap<User, NewUserAuthorizationMessage>();
-            CreateMap<User, UserDeletedMessage>();
+            CreateMap<User, UserCancellationMessage>()
+                .ForMember(dest => dest.Type, opt => opt.Ignore());
         }
     }
 }

@@ -18,10 +18,10 @@ namespace TG.Auth.Api.Application.Users
     public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, OperationResult>
     {
         private readonly ApplicationDbContext _dbContext;
-        private readonly ITopicProducer<UserDeletedMessage> _topicProducer;
+        private readonly ITopicProducer<UserCancellationMessage> _topicProducer;
         private readonly IMapper _mapper;
 
-        public DeleteUserCommandHandler(ApplicationDbContext dbContext, ITopicProducer<UserDeletedMessage> topicProducer, IMapper mapper)
+        public DeleteUserCommandHandler(ApplicationDbContext dbContext, ITopicProducer<UserCancellationMessage> topicProducer, IMapper mapper)
         {
             _dbContext = dbContext;
             _topicProducer = topicProducer;
@@ -37,8 +37,10 @@ namespace TG.Auth.Api.Application.Users
             }
             _dbContext.Remove(user);
 
-            await _dbContext.SaveChangesAtomicallyAsync(() =>
-                _topicProducer.SendMessageAsync(_mapper.Map<UserDeletedMessage>(user)));
+            var mqMessage = _mapper.Map<UserCancellationMessage>(user);
+            mqMessage.Type = UserCancellationType.Deleted;
+            await _dbContext.SaveChangesAtomicallyAsync(() => _topicProducer.SendMessageAsync(mqMessage));
+
             return OperationResult.Success();
         }
     }

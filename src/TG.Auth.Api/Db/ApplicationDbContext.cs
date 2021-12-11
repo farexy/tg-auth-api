@@ -9,6 +9,7 @@ namespace TG.Auth.Api.Db
         public DbSet<User> Users { get; set; } = default!;
         public DbSet<Token> Tokens { get; set; } = default!;
         public DbSet<ExternalAccount> ExternalAccounts { get; set; } = default!;
+        public DbSet<Ban> Bans { get; set; } = default!;
         
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
