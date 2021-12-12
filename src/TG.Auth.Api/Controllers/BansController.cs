@@ -29,7 +29,7 @@ namespace TG.Auth.Api.Controllers
         public async Task<ActionResult> BanUser([FromBody] BanRequest request)
         {
             var result = await _mediator.Send(new BanUserCommand(request.UserId, request.BannedTill,
-                request.Comment,request.Reason, User.GetUserId()));
+                request.Comment,request.Reason, User.GetLogin()));
             return result.ToActionResult()
                 .NotFound(AppErrors.NotFound)
                 .NoContent();

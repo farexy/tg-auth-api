@@ -17,7 +17,7 @@ using TG.Core.ServiceBus.Messages;
 
 namespace TG.Auth.Api.Application.Users
 {
-    public record BanUserCommand(Guid UserId, DateTime? BanTill, string? Comment, BanReason Reason, Guid AdminUserId)
+    public record BanUserCommand(Guid UserId, DateTime? BanTill, string? Comment, BanReason Reason, string AdminUserLogin)
         : IRequest<OperationResult<BanResponse>>;
     
     public class BanUserCommandHandler : IRequestHandler<BanUserCommand, OperationResult<BanResponse>>
@@ -50,7 +50,7 @@ namespace TG.Auth.Api.Application.Users
                 UserId = user.Id,
                 BanTime = _dateTimeProvider.UtcNow,
                 BannedTill = cmd.BanTill,
-                AdminUserId = cmd.AdminUserId,
+                AdminUserLogin = cmd.AdminUserLogin,
                 Comment = cmd.Comment,
                 Reason = cmd.Reason,
             };

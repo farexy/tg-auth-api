@@ -12,11 +12,15 @@ namespace TG.Auth.Api.Entities
         public DateTime BanTime { get; set; }
         
         public DateTime? BannedTill { get; set; }
+        
+        public DateTime? UnbannedTime { get; set; }
 
         public BanReason Reason { get; set; }
         
-        public Guid? AdminUserId { get; set; }
+        public string? AdminUserLogin { get; set; }
         
         public string? Comment { get; set; }
+        
+        public User? User { get; set; }
     }
 }
