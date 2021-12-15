@@ -9,15 +9,16 @@ using TG.Auth.Api.Db;
 using TG.Auth.Api.Entities;
 using TG.Auth.Api.Errors;
 using TG.Auth.Api.Models.Response;
+using TG.Core.App.Exceptions;
 using TG.Core.App.OperationResults;
 using TG.Core.App.Services;
 using TG.Core.Db.Postgres.Extensions;
 using TG.Core.ServiceBus;
 using TG.Core.ServiceBus.Messages;
 
-namespace TG.Auth.Api.Application.Users
+namespace TG.Auth.Api.Application.Bans
 {
-    public record BanUserCommand(Guid UserId, DateTime? BanTill, string? Comment, BanReason Reason, string AdminUserLogin)
+    public record BanUserCommand(Guid UserId, DateTime? BanTill, string? Comment, string Reason, string AdminUserLogin)
         : IRequest<OperationResult<BanResponse>>;
     
     public class BanUserCommandHandler : IRequestHandler<BanUserCommand, OperationResult<BanResponse>>
@@ -44,6 +45,11 @@ namespace TG.Auth.Api.Application.Users
                 return AppErrors.NotFound;
             }
 
+            if (!Enum.TryParse(cmd.Reason, out BanReason reason))
+            {
+                throw new BusinessLogicException("Invalid reason");
+            }
+            
             var ban = new Ban
             {
                 Id = Guid.NewGuid(),
@@ -52,7 +58,7 @@ namespace TG.Auth.Api.Application.Users
                 BannedTill = cmd.BanTill,
                 AdminUserLogin = cmd.AdminUserLogin,
                 Comment = cmd.Comment,
-                Reason = cmd.Reason,
+                Reason = reason,
             };
             user.BanId = ban.Id;
 

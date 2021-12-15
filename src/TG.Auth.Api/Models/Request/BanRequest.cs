@@ -1,5 +1,4 @@
 ﻿using System;
-using TG.Auth.Api.Constants;
 
 namespace TG.Auth.Api.Models.Request
 {
@@ -9,7 +8,7 @@ namespace TG.Auth.Api.Models.Request
 
         public DateTime? BannedTill { get; set; }
 
-        public BanReason Reason { get; set; }
+        public string Reason { get; set; } = default!;
 
         public string? Comment { get; set; }
     }

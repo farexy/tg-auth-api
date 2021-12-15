@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TG.Auth.Api.Application.Tokens;
 using TG.Auth.Api.Config;
+using TG.Auth.Api.Errors;
 using TG.Auth.Api.Models.Request;
 using TG.Auth.Api.Models.Response;
 using TG.Core.App.Constants;
@@ -29,6 +30,7 @@ namespace TG.Auth.Api.Controllers
             var cmd = new CreateTokensByGoogleAuthCommand(request.DeviceId, request.IdToken);
             var result = await _mediator.Send(cmd);
             return result.ToActionResult()
+                .Forbidden(AppErrors.BanActive)
                 .Created();
         }
         
@@ -38,6 +40,7 @@ namespace TG.Auth.Api.Controllers
             var cmd = new CreateTokensByFacebookAuthCommand(request.DeviceId, request.AccessToken);
             var result = await _mediator.Send(cmd);
             return result.ToActionResult()
+                .Forbidden(AppErrors.BanActive)
                 .Created();
         }
         
@@ -47,6 +50,7 @@ namespace TG.Auth.Api.Controllers
             var cmd = new CreateAdminTokensByGoogleAuthCommand(request.DeviceId, request.IdToken);
             var result = await _mediator.Send(cmd);
             return result.ToActionResult()
+                .Forbidden(AppErrors.BanActive)
                 .Created();
         }
         
@@ -56,6 +60,7 @@ namespace TG.Auth.Api.Controllers
             var cmd = new CreateTokensByAppleAuthCommand(request.DeviceId, request.Token);
             var result = await _mediator.Send(cmd);
             return result.ToActionResult()
+                .Forbidden(AppErrors.BanActive)
                 .Created();
         }
         
@@ -65,6 +70,7 @@ namespace TG.Auth.Api.Controllers
             var cmd = new RefreshTokenCommand(request.RefreshToken);
             var result = await _mediator.Send(cmd);
             return result.ToActionResult()
+                .Forbidden(AppErrors.BanActive)
                 .Ok();
         }
     }

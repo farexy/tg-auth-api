@@ -15,6 +15,7 @@ using TG.Auth.Api.Entities;
 using TG.Auth.Api.Extensions;
 using TG.Auth.Api.Models.Response;
 using TG.Core.App.Constants;
+using TG.Core.App.Exceptions;
 using TG.Core.App.OperationResults;
 using TG.Core.App.Services;
 
@@ -45,8 +46,14 @@ namespace TG.Auth.Api.Services
             _rsaParser = rsaParser;
         }
         
-        public async Task<TokensResponse> CreateTokenAsync(User user, string deviceId, AuthType authType, CancellationToken cancellationToken)
+        public async Task<OperationResult<TokensResponse>> CreateTokenAsync(User user, string deviceId,
+            AuthType authType, CancellationToken cancellationToken)
         {
+            if (user.BanId.HasValue)
+            {
+                return await RespondWithBanErrorAsync(user.BanId.Value);
+            }
+            
             var token = await _dbContext.Tokens
                 .FirstOrDefaultAsync(t => t.UserId == user.Id && t.DeviceId == deviceId, cancellationToken);
 
@@ -90,6 +97,11 @@ namespace TG.Auth.Api.Services
                     return ErrorResult.Create("Refresh token validation failed");
                 }
 
+                if (token.User!.BanId.HasValue)
+                {
+                    return await RespondWithBanErrorAsync(token.User!.BanId.Value);
+                }
+
                 token.ExpirationTime = RefreshTokenExpirationTime;
                 token.IssuedTime = _dateTimeProvider.UtcNow;
                 token.RefreshSecret = _cryptoResistantStringGenerator.Generate(RefreshSecretLength);
@@ -109,6 +121,12 @@ namespace TG.Auth.Api.Services
             {
                 return ErrorResult.Create("Invalid token format");
             }
+        }
+
+        private async Task<ErrorResult> RespondWithBanErrorAsync(Guid banId)
+        {
+            var ban = await _dbContext.Bans.FindAsync(banId);
+            return ban.ToError();
         }
 
         private string GenerateAccessToken(User user, string deviceId, AuthType authType)
