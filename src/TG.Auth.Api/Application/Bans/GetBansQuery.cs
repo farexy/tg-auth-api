@@ -31,6 +31,7 @@ namespace TG.Auth.Api.Application.Bans
                 .Include(b => b.User)
                 .Where(b => request.UserId == null || b.UserId == request.UserId)
                 .Where(b => request.UserLogin == null || b.User!.Login == request.UserLogin)
+                .OrderByDescending(b => b.BanTime)
                 .ToListAsync(cancellationToken);
             return new OperationResult<IReadOnlyList<BanResponse>>(_mapper.Map<IReadOnlyList<BanResponse>>(bans));
         }

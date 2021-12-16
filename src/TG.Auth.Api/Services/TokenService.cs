@@ -5,9 +5,11 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using TG.Auth.Api.Application.Bans;
 using TG.Auth.Api.Config.Options;
 using TG.Auth.Api.Constants;
 using TG.Auth.Api.Db;
@@ -15,7 +17,6 @@ using TG.Auth.Api.Entities;
 using TG.Auth.Api.Extensions;
 using TG.Auth.Api.Models.Response;
 using TG.Core.App.Constants;
-using TG.Core.App.Exceptions;
 using TG.Core.App.OperationResults;
 using TG.Core.App.Services;
 
@@ -30,6 +31,7 @@ namespace TG.Auth.Api.Services
         private readonly IOptionsSnapshot<AuthJwtTokenOptions> _jwtTokenSettings;
         private readonly ApplicationDbContext _dbContext;
         private readonly IRsaParser _rsaParser;
+        private readonly IPublisher _publisher;
 
         static TokenService()
         {
@@ -37,19 +39,20 @@ namespace TG.Auth.Api.Services
         }
         
         public TokenService(ICryptoResistantStringGenerator cryptoResistantStringGenerator, IDateTimeProvider dateTimeProvider,
-            IOptionsSnapshot<AuthJwtTokenOptions> jwtTokenSettings, ApplicationDbContext dbContext, IRsaParser rsaParser)
+            IOptionsSnapshot<AuthJwtTokenOptions> jwtTokenSettings, ApplicationDbContext dbContext, IRsaParser rsaParser, IPublisher publisher)
         {
             _cryptoResistantStringGenerator = cryptoResistantStringGenerator;
             _dateTimeProvider = dateTimeProvider;
             _jwtTokenSettings = jwtTokenSettings;
             _dbContext = dbContext;
             _rsaParser = rsaParser;
+            _publisher = publisher;
         }
         
         public async Task<OperationResult<TokensResponse>> CreateTokenAsync(User user, string deviceId,
             AuthType authType, CancellationToken cancellationToken)
         {
-            if (user.BanId.HasValue)
+            if (user.BanId.HasValue && await CheckBanExpirationAsync(user.BanId.Value))
             {
                 return await RespondWithBanErrorAsync(user.BanId.Value);
             }
@@ -97,9 +100,9 @@ namespace TG.Auth.Api.Services
                     return ErrorResult.Create("Refresh token validation failed");
                 }
 
-                if (token.User!.BanId.HasValue)
+                if (token.User!.BanId.HasValue && await CheckBanExpirationAsync(token.User.BanId.Value))
                 {
-                    return await RespondWithBanErrorAsync(token.User!.BanId.Value);
+                    return await RespondWithBanErrorAsync(token.User.BanId.Value);
                 }
 
                 token.ExpirationTime = RefreshTokenExpirationTime;
@@ -121,12 +124,6 @@ namespace TG.Auth.Api.Services
             {
                 return ErrorResult.Create("Invalid token format");
             }
-        }
-
-        private async Task<ErrorResult> RespondWithBanErrorAsync(Guid banId)
-        {
-            var ban = await _dbContext.Bans.FindAsync(banId);
-            return ban.ToError();
         }
 
         private string GenerateAccessToken(User user, string deviceId, AuthType authType)
@@ -177,7 +174,25 @@ namespace TG.Auth.Api.Services
             var handler = new JwtSecurityTokenHandler();
             return handler.WriteToken(jwtToken);
         }
+        
+        private async Task<ErrorResult> RespondWithBanErrorAsync(Guid banId)
+        {
+            var ban = await _dbContext.Bans.FindAsync(banId);
+            return ban.ToError();
+        }
 
+        private async Task<bool> CheckBanExpirationAsync(Guid banId)
+        {
+            var ban = await _dbContext.Bans.FindAsync(banId);
+            if (ban.BannedTill > _dateTimeProvider.UtcNow)
+            {
+                return true;
+            }
+
+            await _publisher.Publish(new UserBanExpiredEvent(ban));
+            return false;
+        }
+        
         private DateTime RefreshTokenExpirationTime =>
             _dateTimeProvider.UtcNow.AddMinutes(_jwtTokenSettings.Value.RefreshExpirationTimeMin);
         

@@ -35,6 +35,8 @@ namespace TG.Auth.Api.Application.Bans
             }
 
             _dbContext.Remove(ban);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
             return OperationResult.Success();
         }
     }

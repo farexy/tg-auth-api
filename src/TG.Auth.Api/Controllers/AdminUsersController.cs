@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using TG.Auth.Api.Application.Users;
 using TG.Auth.Api.Config;
 using TG.Auth.Api.Errors;
+using TG.Auth.Api.Models.Response;
 using TG.Core.App.Constants;
 using TG.Core.App.OperationResults;
 
@@ -22,6 +23,15 @@ namespace TG.Auth.Api.Controllers
         public AdminUsersController(IMediator mediator)
         {
             _mediator = mediator;
+        }
+        
+        [HttpPost("tokens")]
+        public async Task<ActionResult<TokensResponse>> CreateUserTokens([FromQuery] Guid userId)
+        {
+            var result = await _mediator.Send(new AdminCreateUserTokensCommand(userId));
+            return result.ToActionResult()
+                .NotFound(AppErrors.NotFound)
+                .Ok();
         }
 
         [HttpDelete("{userId}")]
